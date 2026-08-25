@@ -1,5 +1,5 @@
 import { RotateCcw } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { EMPTY_FILTERS, type FilterState } from "../lib/filters";
 import type { Category, Country } from "../lib/types";
@@ -29,6 +29,7 @@ function Combo({
   disabled?: boolean;
   onChange: (value: string) => void;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState<string | null>(null);
   const selected = options.find((option) => option.slug === value);
   const text = query ?? selected?.name ?? "";
@@ -39,6 +40,7 @@ function Combo({
   function pick(option: Option | null) {
     onChange(option?.slug ?? "");
     setQuery(null);
+    inputRef.current?.blur();
   }
 
   return (
@@ -52,6 +54,7 @@ function Combo({
     >
       <span className="label text-xs">{label}</span>
       <input
+        ref={inputRef}
         className="filter-btn w-full truncate px-2 py-1.5 text-[16px] sm:text-xs"
         placeholder={disabled ? "—" : (selected?.name ?? "Todas")}
         disabled={disabled}
@@ -65,6 +68,7 @@ function Combo({
             <button
               type="button"
               className="block w-full px-3 py-1.5 text-left text-xs text-neutral-500 hover:bg-brand-50"
+              onPointerDown={(event) => event.preventDefault()}
               onClick={() => pick(null)}
             >
               Todas
@@ -75,6 +79,7 @@ function Combo({
               <button
                 type="button"
                 className="block w-full px-3 py-1.5 text-left text-xs hover:bg-brand-50"
+                onPointerDown={(event) => event.preventDefault()}
                 onClick={() => pick(option)}
               >
                 {option.name}
