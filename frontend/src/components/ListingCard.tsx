@@ -1,4 +1,4 @@
-import { Eye, MapPin, Video } from "lucide-react";
+import { MapPin, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { mediaUrl } from "../lib/api";
@@ -47,9 +47,6 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           <MapPin size={12} />
           {listing.city ? `${listing.city.name}, ` : ""}
           {listing.country.name}
-        </p>
-        <p className="flex items-center gap-1 text-xs text-neutral-400">
-          <Eye size={12} /> {listing.views} · {listing.seller.public_id}
         </p>
       </div>
     </Link>
