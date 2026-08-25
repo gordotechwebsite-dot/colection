@@ -178,6 +178,7 @@ export interface AdminStats {
 
 export interface Banner {
   id: number;
+  slot: string;
   title: string;
   subtitle: string;
   image_url: string | null;

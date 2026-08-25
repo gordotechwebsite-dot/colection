@@ -162,25 +162,38 @@ def apply_filter_values(
         )
 
 
-DEFAULT_BANNER = {
-    "title": "Compra y vende en Redbook",
-    "subtitle": "Clasificados globales con contacto directo al vendedor.",
+BANNER_SLOTS = ("home_top", "home_middle")
+
+DEFAULT_BANNERS = {
+    "home_top": {
+        "title": "Compra y vende en Redbook",
+        "subtitle": "Clasificados globales con contacto directo al vendedor.",
+    },
+    "home_middle": {"title": "", "subtitle": "", "active": False},
 }
 
 
-def get_banner(db: Session) -> models.Banner:
-    """Devuelve el banner único de la portada, creándolo la primera vez."""
-    banner = db.query(models.Banner).order_by(models.Banner.id).first()
+def get_banner(db: Session, slot: str = "home_top") -> models.Banner:
+    """Devuelve el banner de un espacio de la portada, creándolo la primera vez."""
+    if slot not in BANNER_SLOTS:
+        raise HTTPException(status_code=404, detail="Banner inexistente")
+    banner = db.query(models.Banner).filter(models.Banner.slot == slot).first()
     if not banner:
-        banner = models.Banner(**DEFAULT_BANNER)
+        banner = models.Banner(slot=slot, **DEFAULT_BANNERS[slot])
         db.add(banner)
         db.commit()
         db.refresh(banner)
     return banner
 
 
-def update_banner(db: Session, payload: schemas.BannerIn) -> models.Banner:
-    banner = get_banner(db)
+def list_banners(db: Session) -> list[models.Banner]:
+    return [get_banner(db, slot) for slot in BANNER_SLOTS]
+
+
+def update_banner(
+    db: Session, payload: schemas.BannerIn, slot: str = "home_top"
+) -> models.Banner:
+    banner = get_banner(db, slot)
     banner.title = payload.title
     banner.subtitle = payload.subtitle
     banner.image_url = payload.image_url

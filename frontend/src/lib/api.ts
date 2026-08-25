@@ -108,7 +108,7 @@ export const api = {
   listings: (params: URLSearchParams) =>
     request<ListingPage>(`/api/listings?${params.toString()}`),
   listing: (id: number) => request<Listing>(`/api/listings/${id}`),
-  banner: () => request<Banner>("/api/banner"),
+  banners: () => request<Banner[]>("/api/banners"),
   contact: (id: number) =>
     request<Listing>(`/api/listings/${id}/contact`, { method: "POST" }),
   bump: (id: number) =>
@@ -190,9 +190,14 @@ export const api = {
         method: "DELETE",
       }),
 
-    banner: () => request<Banner>("/api/admin/banner", { admin: true }),
-    updateBanner: (body: unknown) =>
-      request<Banner>("/api/admin/banner", { admin: true, method: "PUT", body }),
+    banner: (slot: string) =>
+      request<Banner>(`/api/admin/banner?slot=${slot}`, { admin: true }),
+    updateBanner: (slot: string, body: unknown) =>
+      request<Banner>(`/api/admin/banner?slot=${slot}`, {
+        admin: true,
+        method: "PUT",
+        body,
+      }),
 
     filters: () => request<Filter[]>("/api/admin/filters", { admin: true }),
     createFilter: (body: unknown) =>
