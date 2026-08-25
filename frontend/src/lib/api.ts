@@ -48,6 +48,16 @@ type Options = {
   formData?: FormData;
 };
 
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 function errorMessage(detail: unknown): string {
   if (typeof detail === "string") return detail;
   if (Array.isArray(detail)) {
@@ -81,7 +91,10 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
   if (response.status === 204) return undefined as T;
   const data = await response.json().catch(() => null);
   if (!response.ok) {
-    throw new Error(errorMessage((data as { detail?: unknown })?.detail));
+    throw new ApiError(
+      errorMessage((data as { detail?: unknown })?.detail),
+      response.status,
+    );
   }
   return data as T;
 }
@@ -145,8 +158,8 @@ export const api = {
     countries: () => request<Country[]>("/api/admin/countries", { admin: true }),
     createCountry: (body: unknown) =>
       request<Country>("/api/admin/countries", { admin: true, body }),
-    deleteCountry: (id: number) =>
-      request<void>(`/api/admin/countries/${id}`, {
+    deleteCountry: (id: number, force = false) =>
+      request<void>(`/api/admin/countries/${id}?force=${force}`, {
         admin: true,
         method: "DELETE",
       }),
@@ -155,18 +168,24 @@ export const api = {
         admin: true,
         body,
       }),
-    deleteCity: (id: number) =>
-      request<void>(`/api/admin/cities/${id}`, { admin: true, method: "DELETE" }),
+    deleteCity: (id: number, force = false) =>
+      request<void>(`/api/admin/cities/${id}?force=${force}`, {
+        admin: true,
+        method: "DELETE",
+      }),
     createZone: (cityId: number, body: unknown) =>
       request<Zone>(`/api/admin/cities/${cityId}/zones`, { admin: true, body }),
-    deleteZone: (id: number) =>
-      request<void>(`/api/admin/zones/${id}`, { admin: true, method: "DELETE" }),
+    deleteZone: (id: number, force = false) =>
+      request<void>(`/api/admin/zones/${id}?force=${force}`, {
+        admin: true,
+        method: "DELETE",
+      }),
 
     categories: () => request<Category[]>("/api/admin/categories", { admin: true }),
     createCategory: (body: unknown) =>
       request<Category>("/api/admin/categories", { admin: true, body }),
-    deleteCategory: (id: number) =>
-      request<void>(`/api/admin/categories/${id}`, {
+    deleteCategory: (id: number, force = false) =>
+      request<void>(`/api/admin/categories/${id}?force=${force}`, {
         admin: true,
         method: "DELETE",
       }),

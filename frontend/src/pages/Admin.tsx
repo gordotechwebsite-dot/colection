@@ -1,7 +1,7 @@
 import { Check, Plus, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
-import { api, getAdminToken, mediaUrl, setAdminToken } from "../lib/api";
+import { ApiError, api, getAdminToken, mediaUrl, setAdminToken } from "../lib/api";
 import type {
   AdminStats,
   Banner,
@@ -21,6 +21,20 @@ const TABS: { value: Tab; label: string }[] = [
   { value: "tipos", label: "Tipos" },
   { value: "filtros", label: "Filtros" },
 ];
+
+/** Borra y, si el servidor avisa que arrastra anuncios, pide confirmación y reintenta. */
+async function deleteWithConfirm(remove: (force: boolean) => Promise<unknown>) {
+  try {
+    await remove(false);
+  } catch (caught) {
+    if (caught instanceof ApiError && caught.status === 409) {
+      if (!window.confirm(`${caught.message}\n\n¿Borrar de todas formas?`)) return;
+      await remove(true);
+      return;
+    }
+    throw caught;
+  }
+}
 
 function AdminLogin({ onReady }: { onReady: () => void }) {
   const [token, setToken] = useState("");
@@ -139,6 +153,22 @@ function Moderation() {
                 <X size={14} /> Rechazar
               </button>
             )}
+            <button
+              type="button"
+              className="btn-ghost px-3 py-1 text-xs"
+              title="Eliminar anuncio"
+              onClick={() => {
+                if (!window.confirm(`¿Eliminar "${listing.title}" definitivamente?`)) return;
+                api.admin
+                  .deleteListing(listing.id)
+                  .then(load)
+                  .catch((caught: unknown) =>
+                    setError(caught instanceof Error ? caught.message : "No pudimos borrar"),
+                  );
+              }}
+            >
+              <Trash2 size={14} /> Eliminar
+            </button>
           </div>
         ))}
         {listings.length === 0 && (
@@ -203,7 +233,9 @@ function Locations() {
             <button
               type="button"
               className="btn-ghost ml-auto px-2 py-1 text-xs"
-              onClick={() => run(api.admin.deleteCountry(item.id))}
+              onClick={() =>
+                run(deleteWithConfirm((force) => api.admin.deleteCountry(item.id, force)))
+              }
             >
               <Trash2 size={14} />
             </button>
@@ -240,7 +272,11 @@ function Locations() {
                   <button
                     type="button"
                     className="btn-ghost ml-auto px-2 py-1 text-xs"
-                    onClick={() => run(api.admin.deleteCity(city.id))}
+                    onClick={() =>
+                      run(
+                        deleteWithConfirm((force) => api.admin.deleteCity(city.id, force)),
+                      )
+                    }
                   >
                     <Trash2 size={12} />
                   </button>
@@ -254,7 +290,13 @@ function Locations() {
                       {zone.name}
                       <button
                         type="button"
-                        onClick={() => run(api.admin.deleteZone(zone.id))}
+                        onClick={() =>
+                          run(
+                            deleteWithConfirm((force) =>
+                              api.admin.deleteZone(zone.id, force),
+                            ),
+                          )
+                        }
                       >
                         <X size={11} />
                       </button>
@@ -473,8 +515,7 @@ function Types() {
               type="button"
               className="btn-ghost ml-auto px-2 py-1 text-xs"
               onClick={() =>
-                api.admin
-                  .deleteCategory(category.id)
+                deleteWithConfirm((force) => api.admin.deleteCategory(category.id, force))
                   .then(load)
                   .catch((caught: unknown) =>
                     setError(
