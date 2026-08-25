@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import ContactButton from "../components/ContactButton";
+import LocationMap from "../components/LocationMap";
 import VerifiedBadge from "../components/VerifiedBadge";
 import { api, mediaUrl } from "../lib/api";
 import type { Listing } from "../lib/types";
@@ -37,6 +38,9 @@ export default function ListingDetail() {
   const images = listing.media.filter((item) => item.kind === "image");
   const video = listing.media.find((item) => item.kind === "video");
   const cover = images[active] ?? images[0];
+  const place = [listing.zone?.name, listing.city?.name, listing.country.name]
+    .filter(Boolean)
+    .join(", ");
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
@@ -152,13 +156,13 @@ export default function ListingDetail() {
       </div>
 
       <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-        <div className="card p-4">
+        <div className="card space-y-3 p-4">
           <p className="flex items-center gap-1 text-sm text-neutral-600">
             <MapPin size={14} />
-            {[listing.zone?.name, listing.city?.name, listing.country.name]
-              .filter(Boolean)
-              .join(", ")}
+            {place}
           </p>
+          <LocationMap place={place} />
+          <p className="text-xs text-neutral-500">Ubicación aproximada</p>
         </div>
 
         {listing.filters.length > 0 && (
