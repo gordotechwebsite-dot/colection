@@ -140,14 +140,14 @@ export default function ListingDetail() {
           </div>
         )}
 
-        <div className="card p-4">
-          <div className="mb-2 flex items-start justify-between gap-3">
-            <h1 className="text-lg font-bold">{listing.title}</h1>
-            <ContactButton listing={listing} />
+        <div className="card flex items-start gap-3 p-4">
+          <div className="min-w-0 flex-1">
+            <h1 className="mb-2 text-lg font-bold">{listing.title}</h1>
+            <p className="whitespace-pre-line text-sm text-neutral-700">
+              {listing.description}
+            </p>
           </div>
-          <p className="whitespace-pre-line text-sm text-neutral-700">
-            {listing.description}
-          </p>
+          <ContactButton listing={listing} />
         </div>
       </div>
 
