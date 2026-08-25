@@ -160,11 +160,6 @@ export default function ListingDetail() {
               .filter(Boolean)
               .join(", ")}
           </p>
-          <p className="text-xs text-neutral-500">
-            <span className="rounded-full bg-brand-50 px-2 py-0.5 text-brand-700">
-              {listing.category.name}
-            </span>
-          </p>
         </div>
 
         {listing.filters.length > 0 && (
