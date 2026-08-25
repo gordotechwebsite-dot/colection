@@ -54,7 +54,7 @@ export default function Layout() {
         <Outlet />
       </main>
       <footer className="mt-10 border-t border-brand-100 bg-white py-6 text-center text-sm text-neutral-500">
-        Redbook · Clasificados globales
+        Redbook · Experiencias Indescriptibles
       </footer>
     </div>
   );

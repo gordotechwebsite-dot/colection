@@ -40,15 +40,25 @@ def apply_filters(
     if status:
         query = query.filter(models.Listing.status == status)
     if category:
-        query = query.join(models.Category).filter(models.Category.slug == category)
+        query = query.join(
+            models.Category, models.Category.id == models.Listing.category_id
+        ).filter(models.Category.slug == category)
     if country:
-        query = query.join(models.Country).filter(models.Country.slug == country)
+        query = query.join(
+            models.Country, models.Country.id == models.Listing.country_id
+        ).filter(models.Country.slug == country)
     if city:
-        query = query.join(models.City).filter(models.City.slug == city)
+        query = query.join(models.City, models.City.id == models.Listing.city_id).filter(
+            models.City.slug == city
+        )
     if zone:
-        query = query.join(models.Zone).filter(models.Zone.slug == zone)
+        query = query.join(models.Zone, models.Zone.id == models.Listing.zone_id).filter(
+            models.Zone.slug == zone
+        )
     if seller:
-        query = query.join(models.Seller).filter(models.Seller.public_id == seller)
+        query = query.join(
+            models.Seller, models.Seller.id == models.Listing.seller_id
+        ).filter(models.Seller.public_id == seller)
     if plan:
         query = query.filter(models.Listing.plan == plan)
     if min_price is not None:

@@ -21,27 +21,34 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
+  const [started, setStarted] = useState(false);
+  const useDefaults = !started && [...searchParams.keys()].length === 0;
 
   const filters = useMemo<FilterState>(
-    () => ({
-      country: searchParams.get("country") ?? "",
-      city: searchParams.get("city") ?? "",
-      zone: searchParams.get("zone") ?? "",
-      category: searchParams.get("category") ?? "",
-    }),
-    [searchParams],
+    () =>
+      useDefaults
+        ? DEFAULT_FILTERS
+        : {
+            country: searchParams.get("country") ?? "",
+            city: searchParams.get("city") ?? "",
+            zone: searchParams.get("zone") ?? "",
+            category: searchParams.get("category") ?? "",
+          },
+    [searchParams, useDefaults],
   );
   const page = Number(searchParams.get("page") ?? "1");
 
   useEffect(() => {
-    if ([...searchParams.keys()].length === 0) {
+    if (started) return;
+    if (useDefaults) {
       const initial = new URLSearchParams();
       Object.entries(DEFAULT_FILTERS).forEach(([key, value]) => {
         if (value) initial.set(key, value);
       });
       setSearchParams(initial, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+    setStarted(true);
+  }, [started, useDefaults, setSearchParams]);
 
   useEffect(() => {
     Promise.all([api.countries(), api.categories()])
@@ -67,16 +74,25 @@ export default function Home() {
     params.set("limit", String(PAGE_SIZE));
     params.set("offset", String((page - 1) * PAGE_SIZE));
 
+    let current = true;
     setLoading(true);
     api
       .listings(params)
       .then((data) => {
+        if (!current) return;
         setListings(data.items);
         setTotal(data.total);
         setError(null);
       })
-      .catch(() => setError("No pudimos cargar las publicaciones"))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (current) setError("No pudimos cargar las publicaciones");
+      })
+      .finally(() => {
+        if (current) setLoading(false);
+      });
+    return () => {
+      current = false;
+    };
   }, [filters, searchParams, page]);
 
   function update(next: Partial<Record<string, string>>) {
