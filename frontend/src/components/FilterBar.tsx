@@ -1,7 +1,6 @@
-import { RotateCcw } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
-import { EMPTY_FILTERS, type FilterState } from "../lib/filters";
+import type { FilterState } from "../lib/filters";
 import type { Category, Country } from "../lib/types";
 
 interface Props {
@@ -29,16 +28,18 @@ function Combo({
   disabled?: boolean;
   onChange: (value: string) => void;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState<string | null>(null);
   const selected = options.find((option) => option.slug === value);
   const text = query ?? selected?.name ?? "";
-  // Al abrir se ve la opción elegida y la lista completa; al escribir se filtra.
-  const needle = query === null || query === selected?.name ? "" : query.trim().toLowerCase();
+  // Al abrir el campo queda vacío y con la lista completa; al escribir se filtra.
+  const needle = (query ?? "").trim().toLowerCase();
   const matches = options.filter((option) => option.name.toLowerCase().includes(needle));
 
   function pick(option: Option | null) {
     onChange(option?.slug ?? "");
     setQuery(null);
+    inputRef.current?.blur();
   }
 
   return (
@@ -52,17 +53,13 @@ function Combo({
     >
       <span className="label text-xs">{label}</span>
       <input
-        className={`filter-btn w-full truncate px-2 py-1.5 text-[16px] sm:text-xs ${
-          value ? "filter-btn-active" : ""
-        }`}
-        placeholder={disabled ? "—" : "Todas"}
+        ref={inputRef}
+        className="filter-btn w-full truncate px-2 py-1.5 text-[16px] sm:text-xs"
+        placeholder={disabled ? "—" : (selected?.name ?? "Todas")}
         disabled={disabled}
         value={text}
         onChange={(event) => setQuery(event.target.value)}
-        onFocus={(event) => {
-          setQuery(selected?.name ?? "");
-          event.target.select();
-        }}
+        onFocus={() => setQuery("")}
       />
       {query !== null && !disabled && (
         <ul className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-white/40 bg-white/70 py-1 shadow-xl backdrop-blur-md">
@@ -70,6 +67,7 @@ function Combo({
             <button
               type="button"
               className="block w-full px-3 py-1.5 text-left text-xs text-neutral-500 hover:bg-brand-50"
+              onPointerDown={(event) => event.preventDefault()}
               onClick={() => pick(null)}
             >
               Todas
@@ -80,6 +78,7 @@ function Combo({
               <button
                 type="button"
                 className="block w-full px-3 py-1.5 text-left text-xs hover:bg-brand-50"
+                onPointerDown={(event) => event.preventDefault()}
                 onClick={() => pick(option)}
               >
                 {option.name}
@@ -131,15 +130,6 @@ export default function FilterBar({ countries, categories, value, onChange }: Pr
           onChange={(category) => onChange({ ...value, category })}
         />
       </div>
-      {(value.country || value.city || value.zone || value.category) && (
-        <button
-          type="button"
-          className="btn-ghost mt-3"
-          onClick={() => onChange(EMPTY_FILTERS)}
-        >
-          <RotateCcw size={14} /> Limpiar filtros
-        </button>
-      )}
     </div>
   );
 }
