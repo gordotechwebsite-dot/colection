@@ -76,9 +76,6 @@ export default function ListingDetail() {
                 >
                   <ChevronRight size={20} />
                 </button>
-                <span className="absolute bottom-3 right-3 rounded-full border border-white/25 bg-white/20 px-2.5 py-0.5 text-xs font-medium text-white backdrop-blur-md">
-                  {active + 1} / {images.length}
-                </span>
               </>
             )}
           </div>
