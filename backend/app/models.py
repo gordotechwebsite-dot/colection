@@ -251,3 +251,18 @@ class Media(Base):
     position = Column(Integer, default=0, nullable=False)
 
     listing = relationship("Listing", back_populates="media")
+
+
+class Banner(Base):
+    """Banner de la portada, editable desde el panel de administración."""
+
+    __tablename__ = "banners"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False, default="")
+    subtitle = Column(String, nullable=False, default="")
+    image_url = Column(String, nullable=True)
+    link_url = Column(String, nullable=True)
+    link_label = Column(String, nullable=True)
+    active = Column(Boolean, default=True, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)

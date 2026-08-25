@@ -47,6 +47,11 @@ def get_config():
     )
 
 
+@app.get("/api/banner", response_model=schemas.BannerOut)
+def get_banner(db: Session = Depends(get_db)):
+    return crud.get_banner(db)
+
+
 @app.get("/api/categories", response_model=list[schemas.CategoryOut])
 def list_categories(db: Session = Depends(get_db)):
     return (

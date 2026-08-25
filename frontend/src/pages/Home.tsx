@@ -4,9 +4,10 @@ import { useSearchParams } from "react-router-dom";
 
 import FilterBar from "../components/FilterBar";
 import ListingCard from "../components/ListingCard";
+import HomeBanner from "../components/HomeBanner";
 import { api } from "../lib/api";
 import type { FilterState } from "../lib/filters";
-import type { Category, Country, Listing } from "../lib/types";
+import type { Banner, Category, Country, Listing } from "../lib/types";
 
 const SORTS = [
   { value: "relevance", label: "Relevancia" },
@@ -23,6 +24,7 @@ export default function Home() {
   const [countries, setCountries] = useState<Country[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
+  const [banner, setBanner] = useState<Banner | null>(null);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +49,10 @@ export default function Home() {
         setCategories(categoryList);
       })
       .catch(() => setError("No pudimos cargar los filtros"));
+    api
+      .banner()
+      .then(setBanner)
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -86,31 +92,25 @@ export default function Home() {
 
   return (
     <div className="space-y-5">
-      <section className="card p-6 text-center">
-        <h1 className="text-2xl font-black text-brand-700 sm:text-3xl">
-          Compra y vende en Redbook
-        </h1>
-        <p className="mt-1 text-sm text-neutral-600">
-          Clasificados globales con contacto directo al vendedor.
-        </p>
-        <form
-          className="mx-auto mt-4 flex max-w-xl gap-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            update({ q: query });
-          }}
-        >
-          <input
-            className="input"
-            placeholder="¿Qué estás buscando?"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-          <button className="btn-primary" type="submit">
-            <Search size={16} /> Buscar
-          </button>
-        </form>
-      </section>
+      {banner?.active && <HomeBanner banner={banner} />}
+
+      <form
+        className="flex gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          update({ q: query });
+        }}
+      >
+        <input
+          className="input"
+          placeholder="¿Qué estás buscando?"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+        <button className="btn-primary" type="submit">
+          <Search size={16} /> Buscar
+        </button>
+      </form>
 
       <FilterBar
         countries={countries}

@@ -160,3 +160,33 @@ def apply_filter_values(
         listing.filter_values.append(
             models.ListingFilterValue(filter_id=filter_id, option_id=option_id)
         )
+
+
+DEFAULT_BANNER = {
+    "title": "Compra y vende en Redbook",
+    "subtitle": "Clasificados globales con contacto directo al vendedor.",
+}
+
+
+def get_banner(db: Session) -> models.Banner:
+    """Devuelve el banner único de la portada, creándolo la primera vez."""
+    banner = db.query(models.Banner).order_by(models.Banner.id).first()
+    if not banner:
+        banner = models.Banner(**DEFAULT_BANNER)
+        db.add(banner)
+        db.commit()
+        db.refresh(banner)
+    return banner
+
+
+def update_banner(db: Session, payload: schemas.BannerIn) -> models.Banner:
+    banner = get_banner(db)
+    banner.title = payload.title
+    banner.subtitle = payload.subtitle
+    banner.image_url = payload.image_url
+    banner.link_url = payload.link_url
+    banner.link_label = payload.link_label
+    banner.active = payload.active
+    db.commit()
+    db.refresh(banner)
+    return banner

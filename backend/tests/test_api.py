@@ -156,3 +156,26 @@ def test_whatsapp_link_has_prefilled_message():
     instagram = [item for item in listings if item["contact_channel"] == "instagram"]
     assert instagram
     assert instagram[0]["contact_url"].startswith("https://ig.me/m/")
+
+
+def test_admin_configures_home_banner():
+    default = client.get("/api/banner")
+    assert default.status_code == 200
+    assert default.json()["active"] is True
+
+    saved = client.put(
+        "/api/admin/banner",
+        json={
+            "title": "Ofertas de la semana",
+            "subtitle": "Publica gratis en Redbook",
+            "link_url": "/registro",
+            "link_label": "Anunciarme",
+            "active": True,
+        },
+        headers=ADMIN_HEADERS,
+    )
+    assert saved.status_code == 200, saved.text
+
+    public = client.get("/api/banner").json()
+    assert public["title"] == "Ofertas de la semana"
+    assert public["link_label"] == "Anunciarme"
