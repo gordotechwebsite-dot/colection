@@ -50,6 +50,28 @@ class AdminStats(BaseModel):
     by_plan: dict[str, int]
 
 
+def delete_with_listings(
+    db: Session,
+    entity: models.Country | models.City | models.Zone | models.Category,
+    label: str,
+    force: bool,
+) -> None:
+    """Borra un tipo o ubicación; con force también borra sus anuncios."""
+    listings = entity.listings
+    if listings and not force:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"{label} tiene {len(listings)} anuncio(s), incluidos los rechazados "
+                "o inactivos. Confirma para borrarlos también."
+            ),
+        )
+    for listing in list(listings):
+        db.delete(listing)
+    db.delete(entity)
+    db.commit()
+
+
 @router.get("/session")
 def check_session():
     return {"ok": True}
@@ -113,17 +135,11 @@ def update_category(category_id: int, payload: schemas.CategoryIn, db: Session =
 
 
 @router.delete("/categories/{category_id}", status_code=204)
-def delete_category(category_id: int, db: Session = Depends(get_db)):
+def delete_category(category_id: int, force: bool = False, db: Session = Depends(get_db)):
     category = db.get(models.Category, category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
-    if category.listings:
-        raise HTTPException(
-            status_code=409,
-            detail="La categoría tiene publicaciones; desactívala en lugar de borrarla",
-        )
-    db.delete(category)
-    db.commit()
+    delete_with_listings(db, category, "El tipo", force)
 
 
 # --- Países y ciudades --------------------------------------------------
@@ -173,17 +189,11 @@ def update_country(country_id: int, payload: schemas.CountryIn, db: Session = De
 
 
 @router.delete("/countries/{country_id}", status_code=204)
-def delete_country(country_id: int, db: Session = Depends(get_db)):
+def delete_country(country_id: int, force: bool = False, db: Session = Depends(get_db)):
     country = db.get(models.Country, country_id)
     if not country:
         raise HTTPException(status_code=404, detail="País no encontrado")
-    if country.listings:
-        raise HTTPException(
-            status_code=409,
-            detail="El país tiene publicaciones; desactívalo en lugar de borrarlo",
-        )
-    db.delete(country)
-    db.commit()
+    delete_with_listings(db, country, "El país", force)
 
 
 @router.post("/countries/{country_id}/cities", response_model=schemas.CityOut, status_code=201)
@@ -220,17 +230,11 @@ def update_city(city_id: int, payload: schemas.CityIn, db: Session = Depends(get
 
 
 @router.delete("/cities/{city_id}", status_code=204)
-def delete_city(city_id: int, db: Session = Depends(get_db)):
+def delete_city(city_id: int, force: bool = False, db: Session = Depends(get_db)):
     city = db.get(models.City, city_id)
     if not city:
         raise HTTPException(status_code=404, detail="Ciudad no encontrada")
-    if city.listings:
-        raise HTTPException(
-            status_code=409,
-            detail="La ciudad tiene publicaciones; desactívala en lugar de borrarla",
-        )
-    db.delete(city)
-    db.commit()
+    delete_with_listings(db, city, "La ciudad", force)
 
 
 # --- Zonas --------------------------------------------------------------
@@ -270,17 +274,11 @@ def update_zone(zone_id: int, payload: schemas.ZoneIn, db: Session = Depends(get
 
 
 @router.delete("/zones/{zone_id}", status_code=204)
-def delete_zone(zone_id: int, db: Session = Depends(get_db)):
+def delete_zone(zone_id: int, force: bool = False, db: Session = Depends(get_db)):
     zone = db.get(models.Zone, zone_id)
     if not zone:
         raise HTTPException(status_code=404, detail="Zona no encontrada")
-    if zone.listings:
-        raise HTTPException(
-            status_code=409,
-            detail="La zona tiene publicaciones; desactívala en lugar de borrarla",
-        )
-    db.delete(zone)
-    db.commit()
+    delete_with_listings(db, zone, "La zona", force)
 
 
 # --- Filtros ------------------------------------------------------------

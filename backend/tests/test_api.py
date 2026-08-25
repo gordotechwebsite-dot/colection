@@ -179,3 +179,16 @@ def test_admin_configures_home_banner():
     public = client.get("/api/banner").json()
     assert public["title"] == "Ofertas de la semana"
     assert public["link_label"] == "Anunciarme"
+
+
+def test_delete_country_reports_listings_and_forces():
+    country = client.get("/api/countries").json()[0]
+    blocked = client.delete(f"/api/admin/countries/{country['id']}", headers=ADMIN_HEADERS)
+    assert blocked.status_code == 409
+    assert "anuncio" in blocked.json()["detail"]
+
+    forced = client.delete(
+        f"/api/admin/countries/{country['id']}?force=true", headers=ADMIN_HEADERS
+    )
+    assert forced.status_code == 204, forced.text
+    assert country["id"] not in [item["id"] for item in client.get("/api/countries").json()]
