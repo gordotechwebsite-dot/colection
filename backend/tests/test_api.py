@@ -239,6 +239,58 @@ def test_admin_configures_middle_banner():
     assert unknown.status_code == 404
 
 
+def test_admin_creates_edits_and_deactivates_listing(location):
+    country_id, city_id = location
+    seller = register("admin-anuncios@example.com")["seller"]
+    category_id = client.get("/api/categories").json()[0]["id"]
+
+    created = client.post(
+        "/api/admin/listings",
+        json={
+            "title": "Anuncio del panel",
+            "description": "Descripción larga creada desde el panel de administración.",
+            "seller_id": seller["id"],
+            "category_id": category_id,
+            "country_id": country_id,
+            "city_id": city_id,
+            "media": IMAGES,
+            "specs": [{"label": "Usado", "value": "Sí"}],
+            "plan": "top",
+        },
+        headers=ADMIN_HEADERS,
+    )
+    assert created.status_code == 201, created.text
+    listing = created.json()
+    # El admin publica directo, sin cola de verificación.
+    assert listing["status"] == "approved"
+    assert listing["effective_plan"] == "top"
+    assert client.get(f"/api/listings/{listing['id']}").status_code == 200
+
+    edited = client.patch(
+        f"/api/admin/listings/{listing['id']}",
+        json={
+            "title": "Anuncio editado",
+            "plan": "featured",
+            "media": [*IMAGES, {"kind": "video", "url": "/media/v.mp4"}],
+            "specs": [{"label": "Hecho en", "value": "Italia"}],
+        },
+        headers=ADMIN_HEADERS,
+    )
+    assert edited.status_code == 200, edited.text
+    assert edited.json()["title"] == "Anuncio editado"
+    assert edited.json()["effective_plan"] == "featured"
+    assert [item["kind"] for item in edited.json()["media"]].count("video") == 1
+    assert edited.json()["specs"][0]["label"] == "Hecho en"
+
+    off = client.patch(
+        f"/api/admin/listings/{listing['id']}",
+        json={"active": False},
+        headers=ADMIN_HEADERS,
+    )
+    assert off.status_code == 200, off.text
+    assert client.get(f"/api/listings/{listing['id']}").status_code == 404
+
+
 def test_delete_country_reports_listings_and_forces():
     country = client.get("/api/countries").json()[0]
     blocked = client.delete(f"/api/admin/countries/{country['id']}", headers=ADMIN_HEADERS)

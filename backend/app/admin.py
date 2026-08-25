@@ -14,6 +14,7 @@ class AdminListingCreate(schemas.ListingCreate):
     seller_id: int
     plan: str = ranking.PLAN_FREE
     plan_days: int = Field(default=30, ge=1, le=365)
+    active: bool = True
     # El admin publica directo, sin pasar por la cola de verificación.
     status: str = models.STATUS_APPROVED
 
@@ -407,11 +408,12 @@ def create_listing(payload: AdminListingCreate, db: Session = Depends(get_db)):
     if not seller:
         raise HTTPException(status_code=400, detail="Vendedor inválido")
     listing = crud.create_listing(db, payload, seller, status=payload.status)
+    listing.active = payload.active
     if payload.plan != ranking.PLAN_FREE:
         listing.plan = payload.plan
         listing.plan_until = ranking.plan_expiry(payload.plan_days)
-        db.commit()
-        db.refresh(listing)
+    db.commit()
+    db.refresh(listing)
     return serializers.listing_out(listing)
 
 
