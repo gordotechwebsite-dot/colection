@@ -254,11 +254,16 @@ class Media(Base):
 
 
 class Banner(Base):
-    """Banner de la portada, editable desde el panel de administración."""
+    """Banner de la portada, editable desde el panel de administración.
+
+    `slot` define dónde se muestra: `home_top` arriba de todo y `home_middle`
+    entre los anuncios top y los destacados.
+    """
 
     __tablename__ = "banners"
 
     id = Column(Integer, primary_key=True, index=True)
+    slot = Column(String, nullable=False, default="home_top", unique=True, index=True)
     title = Column(String, nullable=False, default="")
     subtitle = Column(String, nullable=False, default="")
     image_url = Column(String, nullable=True)

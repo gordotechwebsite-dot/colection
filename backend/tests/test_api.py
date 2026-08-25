@@ -181,6 +181,24 @@ def test_admin_configures_home_banner():
     assert public["link_label"] == "Anunciarme"
 
 
+def test_admin_configures_middle_banner():
+    saved = client.put(
+        "/api/admin/banner?slot=home_middle",
+        json={"title": "Publica aquí", "subtitle": "", "active": True},
+        headers=ADMIN_HEADERS,
+    )
+    assert saved.status_code == 200, saved.text
+    assert saved.json()["slot"] == "home_middle"
+
+    banners = {item["slot"]: item for item in client.get("/api/banners").json()}
+    assert set(banners) == {"home_top", "home_middle"}
+    assert banners["home_middle"]["title"] == "Publica aquí"
+    assert banners["home_top"]["title"] != "Publica aquí"
+
+    unknown = client.get("/api/banner?slot=footer")
+    assert unknown.status_code == 404
+
+
 def test_delete_country_reports_listings_and_forces():
     country = client.get("/api/countries").json()[0]
     blocked = client.delete(f"/api/admin/countries/{country['id']}", headers=ADMIN_HEADERS)

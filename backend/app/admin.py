@@ -498,10 +498,14 @@ def delete_listing(listing_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/banner", response_model=schemas.BannerOut)
-def get_banner(db: Session = Depends(get_db)):
-    return crud.get_banner(db)
+def get_banner(slot: str = "home_top", db: Session = Depends(get_db)):
+    return crud.get_banner(db, slot)
 
 
 @router.put("/banner", response_model=schemas.BannerOut)
-def update_banner(payload: schemas.BannerIn, db: Session = Depends(get_db)):
-    return crud.update_banner(db, payload)
+def update_banner(
+    payload: schemas.BannerIn,
+    slot: str = "home_top",
+    db: Session = Depends(get_db),
+):
+    return crud.update_banner(db, payload, slot)

@@ -338,6 +338,21 @@ function Locations() {
 }
 
 function BannerAdmin() {
+  return (
+    <div className="space-y-5">
+      <BannerForm
+        slot="home_top"
+        title="Banner principal (arriba de todo)"
+      />
+      <BannerForm
+        slot="home_middle"
+        title="Banner intermedio (entre los TOP y los destacados)"
+      />
+    </div>
+  );
+}
+
+function BannerForm({ slot, title }: { slot: string; title: string }) {
   const [form, setForm] = useState<Banner | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -345,10 +360,10 @@ function BannerAdmin() {
 
   useEffect(() => {
     api.admin
-      .banner()
+      .banner(slot)
       .then(setForm)
       .catch(() => setError("No pudimos cargar el banner"));
-  }, []);
+  }, [slot]);
 
   function fail(caught: unknown) {
     setError(caught instanceof Error ? caught.message : "Ocurrió un error");
@@ -360,13 +375,14 @@ function BannerAdmin() {
 
   return (
     <div className="space-y-3">
+      <h2 className="font-semibold text-brand-800">{title}</h2>
       <form
         className="card space-y-3 p-4"
         onSubmit={(event) => {
           event.preventDefault();
           setSaved(false);
           api.admin
-            .updateBanner(form)
+            .updateBanner(slot, form)
             .then((next) => {
               setForm(next);
               setError(null);

@@ -7,12 +7,13 @@ from sqlalchemy.orm import Session, joinedload
 
 from . import config, crud, media, models, queries, ranking, schemas, serializers
 from .admin import router as admin_router
-from .database import Base, engine, get_db
+from .database import Base, engine, ensure_schema, get_db
 from .deps import current_seller
 from .seed import seed
 from .sellers import router as sellers_router
 
 Base.metadata.create_all(bind=engine)
+ensure_schema()
 seed()
 
 app = FastAPI(title="Redbook API", description="Clasificados globales")
@@ -48,8 +49,13 @@ def get_config():
 
 
 @app.get("/api/banner", response_model=schemas.BannerOut)
-def get_banner(db: Session = Depends(get_db)):
-    return crud.get_banner(db)
+def get_banner(slot: str = "home_top", db: Session = Depends(get_db)):
+    return crud.get_banner(db, slot)
+
+
+@app.get("/api/banners", response_model=list[schemas.BannerOut])
+def list_banners(db: Session = Depends(get_db)):
+    return crud.list_banners(db)
 
 
 @app.get("/api/categories", response_model=list[schemas.CategoryOut])

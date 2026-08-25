@@ -377,3 +377,4 @@ class BannerOut(BannerIn):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    slot: str
