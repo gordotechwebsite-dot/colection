@@ -40,7 +40,7 @@ export default function Layout() {
                   Ingresar
                 </Link>
                 <Link to="/registro" className="btn-primary">
-                  ANÚNCIATE
+                  ANUNCIATE
                 </Link>
               </>
             )}

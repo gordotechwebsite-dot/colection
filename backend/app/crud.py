@@ -34,6 +34,7 @@ def create_seller(db: Session, payload: schemas.SellerRegister) -> models.Seller
         name=payload.name,
         email=email,
         password_hash=security.hash_password(payload.password),
+        seller_type=payload.seller_type,
         contact_channel=payload.contact_channel,
         whatsapp=payload.whatsapp,
         instagram=payload.instagram,

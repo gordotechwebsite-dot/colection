@@ -9,20 +9,36 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
+NEW_COLUMNS = {
+    "banners": {"slot": "VARCHAR DEFAULT 'home_top'"},
+    "sellers": {"seller_type": "VARCHAR DEFAULT 'independent'"},
+}
+
+
 def ensure_schema() -> None:
     """Añade columnas nuevas a bases de datos creadas con versiones anteriores."""
     inspector = inspect(engine)
-    if "banners" not in inspector.get_table_names():
-        return
-    columns = {column["name"] for column in inspector.get_columns("banners")}
-    if "slot" not in columns:
+    tables = set(inspector.get_table_names())
+    for table, new_columns in NEW_COLUMNS.items():
+        if table not in tables:
+            continue
+        existing = {column["name"] for column in inspector.get_columns(table)}
+        missing = {
+            name: definition
+            for name, definition in new_columns.items()
+            if name not in existing
+        }
+        if not missing:
+            continue
         with engine.begin() as connection:
-            connection.execute(
-                text("ALTER TABLE banners ADD COLUMN slot VARCHAR DEFAULT 'home_top'")
-            )
-            connection.execute(
-                text("UPDATE banners SET slot = 'home_top' WHERE slot IS NULL")
-            )
+            for name, definition in missing.items():
+                connection.execute(
+                    text(f"ALTER TABLE {table} ADD COLUMN {name} {definition}")
+                )
+                default = definition.split("DEFAULT ", 1)[1]
+                connection.execute(
+                    text(f"UPDATE {table} SET {name} = {default} WHERE {name} IS NULL")
+                )
 
 
 def get_db():

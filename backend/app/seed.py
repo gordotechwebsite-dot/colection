@@ -88,7 +88,7 @@ COUNTRIES = [
         "currency": "EUR",
         "cities": {
             "Madrid": ["Salamanca", "Chamberí", "Malasaña"],
-            "Barcelona": ["Eixample", "Gràcia"],
+            "Barcelona": ["Eixample", "Gràcia", "Sagrada Família"],
             "Valencia": ["Ruzafa"],
         },
     },

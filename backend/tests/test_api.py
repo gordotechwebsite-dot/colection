@@ -181,6 +181,26 @@ def test_admin_configures_home_banner():
     assert public["link_label"] == "Anunciarme"
 
 
+def test_seller_type_is_saved_on_register():
+    independiente = register("independiente@example.com")
+    assert independiente["seller"]["seller_type"] == "independent"
+
+    agencia = register("agencia@example.com", seller_type="agency")
+    assert agencia["seller"]["seller_type"] == "agency"
+
+    invalido = client.post(
+        "/api/sellers/register",
+        json={
+            "name": "Tienda Demo",
+            "email": "otra@example.com",
+            "password": "supersecreta",
+            "whatsapp": "+573001234567",
+            "seller_type": "empresa",
+        },
+    )
+    assert invalido.status_code == 422
+
+
 def test_admin_configures_middle_banner():
     saved = client.put(
         "/api/admin/banner?slot=home_middle",
