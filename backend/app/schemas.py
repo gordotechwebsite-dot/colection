@@ -220,6 +220,8 @@ class SellerUpdate(BaseModel):
     contact_channel: ContactChannel | None = None
     whatsapp: str | None = None
     instagram: str | None = None
+    telegram: str | None = None
+    phone: str | None = None
     country_id: int | None = None
     city_id: int | None = None
 
@@ -246,6 +248,8 @@ class SellerOut(BaseModel):
     contact_channel: str
     whatsapp: str | None = None
     instagram: str | None = None
+    telegram: str | None = None
+    phone: str | None = None
     country: CountryRef | None = None
     city: CityOut | None = None
     created_at: datetime
@@ -323,6 +327,8 @@ class ListingOut(ListingBase):
     contact_channel: str
     contact_label: str
     contact_url: str
+    telegram_url: str = ""
+    call_url: str = ""
 
 
 class ListingPage(BaseModel):

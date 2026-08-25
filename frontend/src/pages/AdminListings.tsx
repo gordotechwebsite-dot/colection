@@ -16,6 +16,8 @@ interface FormState {
   description: string;
   contact_channel: string;
   contact_value: string;
+  telegram: string;
+  phone: string;
   category_id: string;
   country_id: string;
   city_id: string;
@@ -35,6 +37,8 @@ const EMPTY: FormState = {
   description: "",
   contact_channel: "whatsapp",
   contact_value: "",
+  telegram: "",
+  phone: "",
   category_id: "",
   country_id: "",
   city_id: "",
@@ -58,6 +62,8 @@ function fromListing(listing: Listing): FormState {
       (listing.contact_channel === "instagram"
         ? listing.seller.instagram
         : listing.seller.whatsapp) ?? "",
+    telegram: listing.seller.telegram ?? "",
+    phone: listing.seller.phone ?? "",
     category_id: String(listing.category_id),
     country_id: String(listing.country.id),
     city_id: listing.city ? String(listing.city.id) : "",
@@ -149,6 +155,8 @@ function ListingForm({
       description: form.description,
       contact_channel: form.contact_channel,
       contact_value: form.contact_value.trim(),
+      telegram: form.telegram.trim(),
+      phone: form.phone.trim(),
       category_id: Number(form.category_id),
       country_id: Number(form.country_id),
       city_id: form.city_id ? Number(form.city_id) : null,
@@ -272,6 +280,30 @@ function ListingForm({
             ))}
           </select>
         </label>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="block">
+          <span className="label">Telegram (opcional)</span>
+          <input
+            className="input"
+            placeholder="usuario o +573001112233"
+            value={form.telegram}
+            onChange={(event) => setForm({ ...form, telegram: event.target.value })}
+          />
+        </label>
+        <label className="block">
+          <span className="label">Teléfono para llamadas (opcional)</span>
+          <input
+            className="input"
+            placeholder="+573001112233"
+            value={form.phone}
+            onChange={(event) => setForm({ ...form, phone: event.target.value })}
+          />
+        </label>
+        <p className="text-xs text-neutral-500 sm:col-span-2">
+          Si los dejas vacíos se usa el número de WhatsApp.
+        </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">

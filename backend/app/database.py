@@ -11,7 +11,11 @@ Base = declarative_base()
 
 NEW_COLUMNS = {
     "banners": {"slot": "VARCHAR DEFAULT 'home_top'"},
-    "sellers": {"seller_type": "VARCHAR DEFAULT 'independent'"},
+    "sellers": {
+        "seller_type": "VARCHAR DEFAULT 'independent'",
+        "telegram": "VARCHAR DEFAULT NULL",
+        "phone": "VARCHAR DEFAULT NULL",
+    },
     "listings": {
         "display_name": "VARCHAR DEFAULT ''",
         "verified": "BOOLEAN DEFAULT 0",

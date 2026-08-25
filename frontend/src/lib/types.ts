@@ -76,6 +76,8 @@ export interface Seller {
   contact_channel: ContactChannel;
   whatsapp?: string | null;
   instagram?: string | null;
+  telegram?: string | null;
+  phone?: string | null;
   country?: Country | null;
   city?: City | null;
   created_at: string;
@@ -131,6 +133,8 @@ export interface Listing {
   contact_channel: ContactChannel;
   contact_label: string;
   contact_url: string;
+  telegram_url: string;
+  call_url: string;
 }
 
 export interface ListingPage {

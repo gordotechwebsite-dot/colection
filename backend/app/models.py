@@ -149,6 +149,9 @@ class Seller(Base):
     contact_channel = Column(String, default=CHANNEL_WHATSAPP, nullable=False)
     whatsapp = Column(String, nullable=True)
     instagram = Column(String, nullable=True)
+    # Telegram y teléfono de llamada; si están vacíos se usa el de WhatsApp.
+    telegram = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
     country_id = Column(Integer, ForeignKey("countries.id"), nullable=True)
     city_id = Column(Integer, ForeignKey("cities.id"), nullable=True)
     active = Column(Boolean, default=True, nullable=False)
