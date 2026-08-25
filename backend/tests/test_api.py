@@ -239,6 +239,53 @@ def test_admin_configures_middle_banner():
     assert unknown.status_code == 404
 
 
+def test_admin_creates_listing_without_seller(location):
+    country_id, _ = location
+    category_id = client.get("/api/categories").json()[0]["id"]
+
+    created = client.post(
+        "/api/admin/listings",
+        json={
+            "title": "Anuncio sin vendedor",
+            "description": "El administrador crea el anuncio y el vendedor queda interno.",
+            "category_id": category_id,
+            "country_id": country_id,
+            "media": IMAGES,
+            "contact_channel": "whatsapp",
+            "contact_value": "+573001112233",
+        },
+        headers=ADMIN_HEADERS,
+    )
+    assert created.status_code == 201, created.text
+    listing = created.json()
+    assert listing["seller"]["public_id"].startswith("RB-")
+    assert listing["contact_url"].startswith("https://wa.me/573001112233")
+
+    # El mismo contacto reutiliza el vendedor interno.
+    again = client.post(
+        "/api/admin/listings",
+        json={
+            "title": "Otro anuncio interno",
+            "description": "Segundo anuncio con el mismo número de contacto interno.",
+            "category_id": category_id,
+            "country_id": country_id,
+            "media": IMAGES,
+            "contact_value": "+57 300 111 2233",
+        },
+        headers=ADMIN_HEADERS,
+    )
+    assert again.status_code == 201, again.text
+    assert again.json()["seller"]["id"] == listing["seller"]["id"]
+
+    moved = client.patch(
+        f"/api/admin/listings/{listing['id']}",
+        json={"contact_channel": "instagram", "contact_value": "@tienda.movil"},
+        headers=ADMIN_HEADERS,
+    )
+    assert moved.status_code == 200, moved.text
+    assert moved.json()["contact_url"] == "https://ig.me/m/tienda.movil"
+
+
 def test_admin_creates_edits_and_deactivates_listing(location):
     country_id, city_id = location
     seller = register("admin-anuncios@example.com")["seller"]

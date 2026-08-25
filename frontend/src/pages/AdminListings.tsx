@@ -2,15 +2,7 @@ import { ImagePlus, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { api, mediaUrl } from "../lib/api";
-import type {
-  Category,
-  Country,
-  Filter,
-  Listing,
-  MediaItem,
-  SellerAccount,
-  Spec,
-} from "../lib/types";
+import type { Category, Country, Filter, Listing, MediaItem, Spec } from "../lib/types";
 
 const PLANS: { value: string; label: string }[] = [
   { value: "free", label: "Gratis" },
@@ -21,7 +13,8 @@ const PLANS: { value: string; label: string }[] = [
 interface FormState {
   title: string;
   description: string;
-  seller_id: string;
+  contact_channel: string;
+  contact_value: string;
   category_id: string;
   country_id: string;
   city_id: string;
@@ -37,7 +30,8 @@ interface FormState {
 const EMPTY: FormState = {
   title: "",
   description: "",
-  seller_id: "",
+  contact_channel: "whatsapp",
+  contact_value: "",
   category_id: "",
   country_id: "",
   city_id: "",
@@ -54,7 +48,11 @@ function fromListing(listing: Listing): FormState {
   return {
     title: listing.title,
     description: listing.description,
-    seller_id: String(listing.seller.id),
+    contact_channel: listing.contact_channel,
+    contact_value:
+      (listing.contact_channel === "instagram"
+        ? listing.seller.instagram
+        : listing.seller.whatsapp) ?? "",
     category_id: String(listing.category_id),
     country_id: String(listing.country.id),
     city_id: listing.city ? String(listing.city.id) : "",
@@ -79,14 +77,12 @@ function fromListing(listing: Listing): FormState {
 
 function ListingForm({
   listing,
-  sellers,
   categories,
   countries,
   onDone,
   onCancel,
 }: {
   listing: Listing | null;
-  sellers: SellerAccount[];
   categories: Category[];
   countries: Country[];
   onDone: () => void;
@@ -144,7 +140,8 @@ function ListingForm({
     const body = {
       title: form.title,
       description: form.description,
-      seller_id: Number(form.seller_id),
+      contact_channel: form.contact_channel,
+      contact_value: form.contact_value.trim(),
       category_id: Number(form.category_id),
       country_id: Number(form.country_id),
       city_id: form.city_id ? Number(form.city_id) : null,
@@ -210,22 +207,29 @@ function ListingForm({
         />
       </label>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-3">
         <label className="block">
-          <span className="label">Vendedor (dueño del anuncio)</span>
+          <span className="label">Canal de contacto</span>
           <select
             className="filter-btn"
-            value={form.seller_id}
-            onChange={(event) => setForm({ ...form, seller_id: event.target.value })}
-            required
+            value={form.contact_channel}
+            onChange={(event) => setForm({ ...form, contact_channel: event.target.value })}
           >
-            <option value="">Elige el vendedor</option>
-            {sellers.map((seller) => (
-              <option key={seller.id} value={seller.id}>
-                {seller.public_id} · {seller.name}
-              </option>
-            ))}
+            <option value="whatsapp">WhatsApp</option>
+            <option value="instagram">Instagram</option>
           </select>
+        </label>
+        <label className="block">
+          <span className="label">
+            {form.contact_channel === "instagram" ? "Usuario de Instagram" : "Número de WhatsApp"}
+          </span>
+          <input
+            className="input"
+            placeholder={form.contact_channel === "instagram" ? "tienda.movil" : "+573001112233"}
+            value={form.contact_value}
+            onChange={(event) => setForm({ ...form, contact_value: event.target.value })}
+            required
+          />
         </label>
         <label className="block">
           <span className="label">Tipo</span>
@@ -501,7 +505,6 @@ function ListingForm({
 
 export default function AdminListings() {
   const [listings, setListings] = useState<Listing[]>([]);
-  const [sellers, setSellers] = useState<SellerAccount[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [editing, setEditing] = useState<Listing | null>(null);
@@ -518,13 +521,12 @@ export default function AdminListings() {
   useEffect(load, [load]);
 
   useEffect(() => {
-    Promise.all([api.admin.sellers(), api.admin.categories(), api.admin.countries()])
-      .then(([sellerList, categoryList, countryList]) => {
-        setSellers(sellerList);
+    Promise.all([api.admin.categories(), api.admin.countries()])
+      .then(([categoryList, countryList]) => {
         setCategories(categoryList);
         setCountries(countryList);
       })
-      .catch(() => setError("No pudimos cargar vendedores, tipos o países"));
+      .catch(() => setError("No pudimos cargar los tipos o países"));
   }, []);
 
   function run(promise: Promise<unknown>) {
@@ -538,19 +540,9 @@ export default function AdminListings() {
   return (
     <div className="space-y-3">
       {!creating && !editing && (
-        <button
-          type="button"
-          className="btn-primary"
-          onClick={() => setCreating(true)}
-          disabled={sellers.length === 0}
-        >
+        <button type="button" className="btn-primary" onClick={() => setCreating(true)}>
           <Plus size={16} /> Crear anuncio
         </button>
-      )}
-      {sellers.length === 0 && (
-        <p className="card p-3 text-sm text-brand-700">
-          Necesitas al menos un vendedor registrado para crear anuncios desde aquí.
-        </p>
       )}
       {error && <p className="text-sm text-brand-700">{error}</p>}
 
@@ -558,7 +550,6 @@ export default function AdminListings() {
         <ListingForm
           key={editing?.id ?? "nuevo"}
           listing={editing}
-          sellers={sellers}
           categories={categories}
           countries={countries}
           onDone={() => {
@@ -585,6 +576,10 @@ export default function AdminListings() {
                 {[listing.zone?.name, listing.city?.name, listing.country.name]
                   .filter(Boolean)
                   .join(", ")}
+              </p>
+              <p className="text-xs text-neutral-400">
+                Usuario: {listing.seller.public_id} · {listing.seller.name} ·{" "}
+                {listing.contact_label}
               </p>
             </div>
             <select
