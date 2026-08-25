@@ -45,7 +45,7 @@ export default function ContactButton({ listing }: { listing: Listing }) {
     "flex h-9 w-9 items-center justify-center rounded-full text-white shadow-md transition hover:scale-105";
 
   return (
-    <div className="flex shrink-0 flex-col items-center gap-2">
+    <div className="flex shrink-0 flex-col items-center justify-center gap-2">
       {listing.contact_url && (
         <a
           href={listing.contact_url}
