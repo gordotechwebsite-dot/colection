@@ -2,12 +2,11 @@ import { Eye, MapPin, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { mediaUrl } from "../lib/api";
-import { formatPrice } from "../lib/format";
 import type { Listing } from "../lib/types";
 
 const PLAN_STYLES: Record<string, string> = {
-  top: "bg-brand-600 text-white",
-  featured: "bg-brand-100 text-brand-700",
+  top: "bg-amber-400 text-amber-950",
+  featured: "bg-purple-400 text-white",
   free: "hidden",
 };
 
@@ -44,7 +43,6 @@ export default function ListingCard({ listing }: { listing: Listing }) {
       </div>
       <div className="space-y-1 p-3">
         <p className="line-clamp-2 text-sm font-semibold">{listing.title}</p>
-        <p className="text-base font-bold text-brand-700">{formatPrice(listing)}</p>
         <p className="flex items-center gap-1 text-xs text-neutral-500">
           <MapPin size={12} />
           {listing.city ? `${listing.city.name}, ` : ""}

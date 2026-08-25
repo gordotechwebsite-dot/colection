@@ -99,4 +99,7 @@ def sort_listings(listings: list[models.Listing], sort: str) -> list[models.List
         return sorted(listings, key=lambda item: item.price or 0, reverse=True)
     if sort == "views":
         return sorted(listings, key=lambda item: item.views, reverse=True)
-    return sorted(listings, key=ranking.score, reverse=True)
+    return sorted(
+        listings,
+        key=lambda item: (ranking.plan_rank(item), -ranking.score(item)),
+    )

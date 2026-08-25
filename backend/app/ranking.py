@@ -22,6 +22,7 @@ PLAN_TOP = "top"
 PLANS = (PLAN_FREE, PLAN_FEATURED, PLAN_TOP)
 
 PLAN_WEIGHTS = {PLAN_FREE: 0.0, PLAN_FEATURED: 150.0, PLAN_TOP: 300.0}
+PLAN_RANKS = {PLAN_TOP: 0, PLAN_FEATURED: 1, PLAN_FREE: 2}
 PLAN_LABELS = {PLAN_FREE: "Gratis", PLAN_FEATURED: "Destacado", PLAN_TOP: "Top"}
 
 FRESHNESS_MAX = 60.0
@@ -66,6 +67,11 @@ def score(listing, now: datetime | None = None) -> float:
         + engagement(listing.views, listing.contact_clicks)
     )
     return round(total, 2)
+
+
+def plan_rank(listing, now: datetime | None = None) -> int:
+    """Grupo de la publicación: primero los top, luego destacados y gratis."""
+    return PLAN_RANKS[effective_plan(listing, now)]
 
 
 def plan_expiry(days: int, now: datetime | None = None) -> datetime:
