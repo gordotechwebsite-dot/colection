@@ -141,7 +141,10 @@ export default function ListingDetail() {
         )}
 
         <div className="card p-4">
-          <h2 className="mb-2 font-semibold">Descripción</h2>
+          <div className="mb-2 flex items-start justify-between gap-3">
+            <h1 className="text-lg font-bold">{listing.title}</h1>
+            <ContactButton listing={listing} />
+          </div>
           <p className="whitespace-pre-line text-sm text-neutral-700">
             {listing.description}
           </p>
@@ -149,11 +152,7 @@ export default function ListingDetail() {
       </div>
 
       <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-        <div className="card space-y-3 p-4">
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="text-lg font-bold">{listing.title}</h1>
-            <ContactButton listing={listing} />
-          </div>
+        <div className="card p-4">
           <p className="flex items-center gap-1 text-sm text-neutral-600">
             <MapPin size={14} />
             {[listing.zone?.name, listing.city?.name, listing.country.name]
