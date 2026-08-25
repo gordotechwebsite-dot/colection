@@ -80,6 +80,14 @@ export default function Home() {
   }
 
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const groups = [
+    { plan: "top", title: "TOP", accent: "bg-amber-400 text-amber-950" },
+    { plan: "featured", title: "Destacados", accent: "bg-purple-400 text-white" },
+    { plan: "free", title: "Más publicaciones", accent: "bg-white text-brand-700" },
+  ].map((group) => ({
+    ...group,
+    items: listings.filter((listing) => listing.effective_plan === group.plan),
+  }));
 
   return (
     <div className="space-y-5">
@@ -133,11 +141,22 @@ export default function Home() {
         </p>
       )}
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-        {listings.map((listing) => (
-          <ListingCard key={listing.id} listing={listing} />
+      {groups
+        .filter((group) => group.items.length > 0)
+        .map((group) => (
+          <section key={group.plan} className="space-y-3">
+            <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-brand-800">
+              <span className={`rounded-full px-2 py-0.5 text-xs ${group.accent}`}>
+                {group.title}
+              </span>
+            </h2>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {group.items.map((listing) => (
+                <ListingCard key={listing.id} listing={listing} />
+              ))}
+            </div>
+          </section>
         ))}
-      </div>
 
       {pages > 1 && (
         <div className="flex items-center justify-center gap-2">
