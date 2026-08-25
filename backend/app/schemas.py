@@ -263,6 +263,7 @@ class AuthOut(BaseModel):
 
 class ListingBase(BaseModel):
     title: str = Field(min_length=3, max_length=120)
+    display_name: str = Field(default="", max_length=60)
     description: str = Field(min_length=20, max_length=5000)
     price: float | None = Field(default=None, ge=0)
     currency: str = "USD"
@@ -295,6 +296,7 @@ class ListingOut(ListingBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    verified: bool = False
     category_id: int
     category: CategoryOut
     seller: SellerOut

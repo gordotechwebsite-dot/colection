@@ -15,6 +15,7 @@ import type {
 
 interface FormState {
   title: string;
+  display_name: string;
   description: string;
   category_id: string;
   country_id: string;
@@ -24,6 +25,7 @@ interface FormState {
 
 const EMPTY: FormState = {
   title: "",
+  display_name: "",
   description: "",
   category_id: "",
   country_id: "",
@@ -88,6 +90,7 @@ export default function Publish() {
       const uploaded = await api.upload(video ? [...images, video] : images);
       const result = await api.createListing({
         title: form.title,
+        display_name: form.display_name.trim(),
         description: form.description,
         category_id: Number(form.category_id),
         country_id: Number(form.country_id),
@@ -163,6 +166,18 @@ export default function Publish() {
             value={form.title}
             onChange={(event) => setForm({ ...form, title: event.target.value })}
             required
+          />
+        </div>
+        <div>
+          <label className="label" htmlFor="display_name">
+            Nombre (se muestra sobre la foto)
+          </label>
+          <input
+            id="display_name"
+            className="input"
+            maxLength={60}
+            value={form.display_name}
+            onChange={(event) => setForm({ ...form, display_name: event.target.value })}
           />
         </div>
         <div>

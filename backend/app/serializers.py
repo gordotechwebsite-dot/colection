@@ -39,6 +39,8 @@ def listing_out(listing: Listing) -> dict:
     return {
         "id": listing.id,
         "title": listing.title,
+        "display_name": listing.display_name or "",
+        "verified": bool(listing.verified),
         "description": listing.description,
         "price": listing.price,
         "currency": listing.currency,

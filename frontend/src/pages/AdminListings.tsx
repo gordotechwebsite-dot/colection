@@ -12,6 +12,7 @@ const PLANS: { value: string; label: string }[] = [
 
 interface FormState {
   title: string;
+  display_name: string;
   description: string;
   contact_channel: string;
   contact_value: string;
@@ -22,6 +23,7 @@ interface FormState {
   plan: string;
   plan_days: string;
   active: boolean;
+  verified: boolean;
   specs: Spec[];
   media: MediaItem[];
   filterValues: Record<number, string>;
@@ -29,6 +31,7 @@ interface FormState {
 
 const EMPTY: FormState = {
   title: "",
+  display_name: "",
   description: "",
   contact_channel: "whatsapp",
   contact_value: "",
@@ -39,6 +42,7 @@ const EMPTY: FormState = {
   plan: "free",
   plan_days: "30",
   active: true,
+  verified: false,
   specs: [{ label: "", value: "" }],
   media: [],
   filterValues: {},
@@ -47,6 +51,7 @@ const EMPTY: FormState = {
 function fromListing(listing: Listing): FormState {
   return {
     title: listing.title,
+    display_name: listing.display_name,
     description: listing.description,
     contact_channel: listing.contact_channel,
     contact_value:
@@ -60,6 +65,7 @@ function fromListing(listing: Listing): FormState {
     plan: listing.plan,
     plan_days: "30",
     active: listing.active,
+    verified: listing.verified,
     specs:
       listing.specs.length > 0
         ? listing.specs.map((spec) => ({ label: spec.label, value: spec.value }))
@@ -139,6 +145,7 @@ function ListingForm({
     setBusy("Guardando…");
     const body = {
       title: form.title,
+      display_name: form.display_name.trim(),
       description: form.description,
       contact_channel: form.contact_channel,
       contact_value: form.contact_value.trim(),
@@ -149,6 +156,7 @@ function ListingForm({
       plan: form.plan,
       plan_days: Number(form.plan_days) || 30,
       active: form.active,
+      verified: form.verified,
       // Reordena para que las fotos salgan en el mismo orden de la lista.
       media: form.media.map((item, index) => ({
         kind: item.kind,
@@ -194,6 +202,23 @@ function ListingForm({
           onChange={(event) => setForm({ ...form, title: event.target.value })}
           required
         />
+      </label>
+      <label className="block">
+        <span className="label">Nombre (se muestra sobre la foto)</span>
+        <input
+          className="input"
+          maxLength={60}
+          value={form.display_name}
+          onChange={(event) => setForm({ ...form, display_name: event.target.value })}
+        />
+      </label>
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={form.verified}
+          onChange={(event) => setForm({ ...form, verified: event.target.checked })}
+        />
+        Mostrar el chulo de verificado junto al nombre
       </label>
       <label className="block">
         <span className="label">Descripción</span>
