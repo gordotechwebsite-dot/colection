@@ -376,6 +376,12 @@ function BannerForm({ slot, title }: { slot: string; title: string }) {
   return (
     <div className="space-y-3">
       <h2 className="font-semibold text-brand-800">{title}</h2>
+      {!form.active && (
+        <p className="card p-3 text-sm text-brand-700">
+          Este banner está oculto. Marca “Mostrar el banner en la portada” y guarda
+          para que aparezca.
+        </p>
+      )}
       <form
         className="card space-y-3 p-4"
         onSubmit={(event) => {
@@ -444,7 +450,9 @@ function BannerForm({ slot, title }: { slot: string; title: string }) {
               setUploading(true);
               api
                 .upload([file])
-                .then(([uploaded]) => setForm({ ...form, image_url: uploaded.url }))
+                .then(([uploaded]) =>
+                  setForm({ ...form, image_url: uploaded.url, active: true }),
+                )
                 .catch(fail)
                 .finally(() => setUploading(false));
             }}
