@@ -113,6 +113,7 @@ def create_listing(
 
     listing = models.Listing(
         title=payload.title,
+        display_name=payload.display_name.strip(),
         description=payload.description,
         price=payload.price,
         currency=payload.currency,

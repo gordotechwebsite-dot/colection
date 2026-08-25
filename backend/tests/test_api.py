@@ -251,6 +251,8 @@ def test_admin_creates_listing_without_seller(location):
             "category_id": category_id,
             "country_id": country_id,
             "media": IMAGES,
+            "display_name": "  Valentina  ",
+            "verified": True,
             "contact_channel": "whatsapp",
             "contact_value": "+573001112233",
         },
@@ -258,6 +260,8 @@ def test_admin_creates_listing_without_seller(location):
     )
     assert created.status_code == 201, created.text
     listing = created.json()
+    assert listing["display_name"] == "Valentina"
+    assert listing["verified"] is True
     assert listing["seller"]["public_id"].startswith("RB-")
     assert listing["contact_url"].startswith("https://wa.me/573001112233")
 
@@ -279,11 +283,18 @@ def test_admin_creates_listing_without_seller(location):
 
     moved = client.patch(
         f"/api/admin/listings/{listing['id']}",
-        json={"contact_channel": "instagram", "contact_value": "@tienda.movil"},
+        json={
+            "contact_channel": "instagram",
+            "contact_value": "@tienda.movil",
+            "display_name": " Sofía ",
+            "verified": False,
+        },
         headers=ADMIN_HEADERS,
     )
     assert moved.status_code == 200, moved.text
     assert moved.json()["contact_url"] == "https://ig.me/m/tienda.movil"
+    assert moved.json()["display_name"] == "Sofía"
+    assert moved.json()["verified"] is False
 
 
 def test_admin_creates_edits_and_deactivates_listing(location):

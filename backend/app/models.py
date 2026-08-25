@@ -164,6 +164,10 @@ class Listing(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
+    # Nombre que se muestra sobre la foto dentro del anuncio.
+    display_name = Column(String, default="", nullable=False)
+    # Chulo de verificado junto al nombre; solo lo activa el admin.
+    verified = Column(Boolean, default=False, nullable=False)
     description = Column(Text, nullable=False)
     price = Column(Float, nullable=True)
     currency = Column(String, default="USD", nullable=False)

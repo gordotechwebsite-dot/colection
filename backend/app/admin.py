@@ -58,12 +58,15 @@ class AdminListingCreate(schemas.ListingCreate):
     plan: str = ranking.PLAN_FREE
     plan_days: int = Field(default=30, ge=1, le=365)
     active: bool = True
+    # Solo el admin decide si el nombre lleva el chulo de verificado.
+    verified: bool = False
     # El admin publica directo, sin pasar por la cola de verificación.
     status: str = models.STATUS_APPROVED
 
 
 class AdminListingUpdate(BaseModel):
     title: str | None = Field(default=None, min_length=3, max_length=120)
+    display_name: str | None = Field(default=None, max_length=60)
     description: str | None = Field(default=None, min_length=20, max_length=5000)
     price: float | None = Field(default=None, ge=0)
     currency: str | None = None
@@ -75,6 +78,7 @@ class AdminListingUpdate(BaseModel):
     contact_channel: str | None = None
     contact_value: str | None = None
     active: bool | None = None
+    verified: bool | None = None
     plan: str | None = None
     plan_days: int | None = Field(default=None, ge=1, le=365)
     filter_values: dict[int, int] | None = None
@@ -457,6 +461,7 @@ def create_listing(payload: AdminListingCreate, db: Session = Depends(get_db)):
         seller = internal_seller(db, payload.contact_channel, payload.contact_value)
     listing = crud.create_listing(db, payload, seller, status=payload.status)
     listing.active = payload.active
+    listing.verified = payload.verified
     if payload.plan != ranking.PLAN_FREE:
         listing.plan = payload.plan
         listing.plan_until = ranking.plan_expiry(payload.plan_days)
@@ -504,6 +509,9 @@ def update_listing(listing_id: int, payload: AdminListingUpdate, db: Session = D
             raise HTTPException(
                 status_code=400, detail="La zona no pertenece a la ciudad seleccionada"
             )
+
+    if data.get("display_name") is not None:
+        data["display_name"] = data["display_name"].strip()
 
     for key, value in data.items():
         setattr(listing, key, value)

@@ -100,6 +100,8 @@ export type ListingStatus = "pending" | "approved" | "rejected";
 export interface Listing {
   id: number;
   title: string;
+  display_name: string;
+  verified: boolean;
   description: string;
   price: number | null;
   currency: string;

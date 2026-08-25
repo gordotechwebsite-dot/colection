@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import ContactButton from "../components/ContactButton";
+import VerifiedBadge from "../components/VerifiedBadge";
 import { api, mediaUrl } from "../lib/api";
 import type { Listing } from "../lib/types";
 
@@ -78,6 +79,16 @@ export default function ListingDetail() {
                   <ChevronRight size={20} />
                 </button>
               </>
+            )}
+            {listing.display_name && (
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent px-4 pb-3 pt-10">
+                <p className="flex items-center gap-1.5 font-display text-2xl font-bold italic tracking-wide text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)] sm:text-3xl">
+                  {listing.display_name}
+                  {listing.verified && (
+                    <VerifiedBadge className="h-6 w-6 shrink-0 drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)] sm:h-7 sm:w-7" />
+                  )}
+                </p>
+              </div>
             )}
           </div>
           {images.length > 1 && (
