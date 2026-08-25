@@ -181,6 +181,26 @@ def test_admin_configures_home_banner():
     assert public["link_label"] == "Anunciarme"
 
 
+def test_location_filters_use_the_listing_columns():
+    countries = client.get("/api/countries").json()
+    cities = [city for country in countries for city in country["cities"] if city["zones"]]
+    city, other_city = cities[0], cities[1]
+
+    # Una ciudad combinada con la zona de otra ciudad no puede devolver nada.
+    mismatched = client.get(
+        "/api/listings",
+        params={"city": city["slug"], "zone": other_city["zones"][0]["slug"]},
+    ).json()
+    assert mismatched["total"] == 0
+
+    zone = city["zones"][0]["slug"]
+    matching = client.get(
+        "/api/listings",
+        params={"city": city["slug"], "zone": zone},
+    ).json()
+    assert all(item["zone"]["slug"] == zone for item in matching["items"])
+
+
 def test_seller_type_is_saved_on_register():
     independiente = register("independiente@example.com")
     assert independiente["seller"]["seller_type"] == "independent"

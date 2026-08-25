@@ -52,7 +52,7 @@ function Combo({
     >
       <span className="label text-xs">{label}</span>
       <input
-        className={`filter-btn w-full truncate px-2 py-1.5 text-xs ${
+        className={`filter-btn w-full truncate px-2 py-1.5 text-[16px] sm:text-xs ${
           value ? "filter-btn-active" : ""
         }`}
         placeholder={disabled ? "—" : "Todas"}
