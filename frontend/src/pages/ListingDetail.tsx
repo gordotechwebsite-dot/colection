@@ -1,4 +1,11 @@
-import { ArrowLeft, BadgeCheck, Eye, MapPin } from "lucide-react";
+import {
+  ArrowLeft,
+  BadgeCheck,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  MapPin,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
@@ -41,13 +48,38 @@ export default function ListingDetail() {
     <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
       <div className="space-y-4">
         <div className="card overflow-hidden">
-          <div className="aspect-[4/3] bg-neutral-100">
+          <div className="relative aspect-[4/3] bg-neutral-100">
             {cover && (
               <img
                 src={mediaUrl(cover.url)}
                 alt={listing.title}
                 className="h-full w-full object-cover"
               />
+            )}
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Foto anterior"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full border border-white/30 bg-white/20 p-2.5 text-white shadow-lg backdrop-blur-md transition hover:bg-white/35"
+                  onClick={() =>
+                    setActive((current) => (current - 1 + images.length) % images.length)
+                  }
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Foto siguiente"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-white/30 bg-white/20 p-2.5 text-white shadow-lg backdrop-blur-md transition hover:bg-white/35"
+                  onClick={() => setActive((current) => (current + 1) % images.length)}
+                >
+                  <ChevronRight size={20} />
+                </button>
+                <span className="absolute bottom-3 right-3 rounded-full border border-white/25 bg-white/20 px-2.5 py-0.5 text-xs font-medium text-white backdrop-blur-md">
+                  {active + 1} / {images.length}
+                </span>
+              </>
             )}
           </div>
           {images.length > 1 && (
