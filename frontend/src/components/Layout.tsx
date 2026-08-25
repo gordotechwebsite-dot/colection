@@ -1,4 +1,4 @@
-import { LayoutDashboard, LogOut, PlusCircle, Store } from "lucide-react";
+import { Flame, LayoutDashboard, LogOut, PlusCircle } from "lucide-react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
 import { useSession } from "../lib/session";
@@ -12,7 +12,7 @@ export default function Layout() {
       <header className="sticky top-0 z-20 border-b border-brand-100 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2 text-lg font-black text-brand-700">
-            <Store size={22} /> Redbook
+            <Flame size={22} /> Redbook
           </Link>
           <nav className="ml-auto flex items-center gap-2">
             {seller ? (
