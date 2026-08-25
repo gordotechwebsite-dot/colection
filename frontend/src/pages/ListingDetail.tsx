@@ -150,7 +150,10 @@ export default function ListingDetail() {
 
       <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
         <div className="card space-y-3 p-4">
-          <h1 className="text-lg font-bold">{listing.title}</h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-lg font-bold">{listing.title}</h1>
+            <ContactButton listing={listing} />
+          </div>
           <p className="flex items-center gap-1 text-sm text-neutral-600">
             <MapPin size={14} />
             {[listing.zone?.name, listing.city?.name, listing.country.name]
@@ -162,7 +165,6 @@ export default function ListingDetail() {
               {listing.category.name}
             </span>
           </p>
-          <ContactButton listing={listing} />
         </div>
 
         {listing.filters.length > 0 && (
