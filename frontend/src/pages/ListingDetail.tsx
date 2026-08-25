@@ -1,4 +1,4 @@
-import { ArrowLeft, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
@@ -157,12 +157,8 @@ export default function ListingDetail() {
 
       <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
         <div className="card space-y-3 p-4">
-          <p className="flex items-center gap-1 text-sm text-neutral-600">
-            <MapPin size={14} />
-            {place}
-          </p>
+          <p className="text-sm text-neutral-600">{place}</p>
           <LocationMap place={place} />
-          <p className="text-xs text-neutral-500">Ubicación aproximada</p>
         </div>
 
         {listing.filters.length > 0 && (
