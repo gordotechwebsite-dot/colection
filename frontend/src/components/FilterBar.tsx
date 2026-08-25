@@ -24,15 +24,15 @@ function Select({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="block">
-      <span className="label">{label}</span>
+    <label className="block min-w-0">
+      <span className="label text-xs">{label}</span>
       <select
-        className={`filter-btn ${value ? "filter-btn-active" : ""}`}
+        className={`filter-btn truncate px-2 py-1.5 text-xs ${value ? "filter-btn-active" : ""}`}
         value={value}
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
       >
-        <option value="">{disabled ? "Elige antes el anterior" : `Todas`}</option>
+        <option value="">{disabled ? "—" : "Todas"}</option>
         {options.map((option) => (
           <option key={option.slug} value={option.slug}>
             {option.name}
@@ -50,8 +50,8 @@ export default function FilterBar({ countries, categories, value, onChange }: Pr
   const zones = city?.zones ?? [];
 
   return (
-    <div className="card p-4">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="card p-3">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
         <Select
           label="País"
           value={value.country}
