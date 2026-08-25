@@ -144,7 +144,7 @@ export default function ListingDetail() {
           </div>
         )}
 
-        <div className="card flex items-start gap-3 p-4">
+        <div className="card flex items-stretch gap-3 p-4">
           <div className="min-w-0 flex-1">
             <h1 className="mb-2 text-lg font-bold">{listing.title}</h1>
             <p className="whitespace-pre-line text-sm text-neutral-700">
