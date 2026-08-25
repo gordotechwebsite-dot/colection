@@ -175,3 +175,13 @@ export interface AdminStats {
   contact_clicks: number;
   by_plan: Record<string, number>;
 }
+
+export interface Banner {
+  id: number;
+  title: string;
+  subtitle: string;
+  image_url: string | null;
+  link_url: string | null;
+  link_label: string | null;
+  active: boolean;
+}

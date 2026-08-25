@@ -1,9 +1,10 @@
 import { Check, Plus, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
-import { api, getAdminToken, setAdminToken } from "../lib/api";
+import { api, getAdminToken, mediaUrl, setAdminToken } from "../lib/api";
 import type {
   AdminStats,
+  Banner,
   Category,
   Country,
   Filter,
@@ -11,9 +12,10 @@ import type {
   ListingStatus,
 } from "../lib/types";
 
-type Tab = "moderacion" | "ubicaciones" | "tipos" | "filtros";
+type Tab = "banner" | "moderacion" | "ubicaciones" | "tipos" | "filtros";
 
 const TABS: { value: Tab; label: string }[] = [
+  { value: "banner", label: "Banner" },
   { value: "moderacion", label: "Moderación" },
   { value: "ubicaciones", label: "Países, ciudades y zonas" },
   { value: "tipos", label: "Tipos" },
@@ -293,6 +295,133 @@ function Locations() {
   );
 }
 
+function BannerAdmin() {
+  const [form, setForm] = useState<Banner | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    api.admin
+      .banner()
+      .then(setForm)
+      .catch(() => setError("No pudimos cargar el banner"));
+  }, []);
+
+  function fail(caught: unknown) {
+    setError(caught instanceof Error ? caught.message : "Ocurrió un error");
+  }
+
+  if (!form) {
+    return <p className="card p-4 text-sm text-neutral-600">{error ?? "Cargando…"}</p>;
+  }
+
+  return (
+    <div className="space-y-3">
+      <form
+        className="card space-y-3 p-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setSaved(false);
+          api.admin
+            .updateBanner(form)
+            .then((next) => {
+              setForm(next);
+              setError(null);
+              setSaved(true);
+            })
+            .catch(fail);
+        }}
+      >
+        <label className="block">
+          <span className="label">Título</span>
+          <input
+            className="input"
+            value={form.title}
+            onChange={(event) => setForm({ ...form, title: event.target.value })}
+          />
+        </label>
+        <label className="block">
+          <span className="label">Subtítulo</span>
+          <input
+            className="input"
+            value={form.subtitle}
+            onChange={(event) => setForm({ ...form, subtitle: event.target.value })}
+          />
+        </label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="label">Texto del botón (opcional)</span>
+            <input
+              className="input"
+              value={form.link_label ?? ""}
+              onChange={(event) =>
+                setForm({ ...form, link_label: event.target.value || null })
+              }
+            />
+          </label>
+          <label className="block">
+            <span className="label">Enlace del botón (ruta o URL)</span>
+            <input
+              className="input"
+              placeholder="/registro"
+              value={form.link_url ?? ""}
+              onChange={(event) => setForm({ ...form, link_url: event.target.value || null })}
+            />
+          </label>
+        </div>
+        <label className="block">
+          <span className="label">Imagen de fondo (opcional)</span>
+          <input
+            className="input"
+            type="file"
+            accept="image/*"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (!file) return;
+              setUploading(true);
+              api
+                .upload([file])
+                .then(([uploaded]) => setForm({ ...form, image_url: uploaded.url }))
+                .catch(fail)
+                .finally(() => setUploading(false));
+            }}
+          />
+        </label>
+        {form.image_url && (
+          <div className="flex items-center gap-3">
+            <img
+              src={mediaUrl(form.image_url)}
+              alt="Banner"
+              className="h-20 w-40 rounded-lg object-cover"
+            />
+            <button
+              type="button"
+              className="btn-ghost px-2 py-1 text-xs"
+              onClick={() => setForm({ ...form, image_url: null })}
+            >
+              <Trash2 size={14} /> Quitar imagen
+            </button>
+          </div>
+        )}
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={form.active}
+            onChange={(event) => setForm({ ...form, active: event.target.checked })}
+          />
+          Mostrar el banner en la portada
+        </label>
+        <button className="btn-primary" disabled={uploading}>
+          <Check size={16} /> {uploading ? "Subiendo imagen…" : "Guardar banner"}
+        </button>
+      </form>
+      {error && <p className="text-sm text-brand-700">{error}</p>}
+      {saved && <p className="text-sm text-green-700">Banner actualizado.</p>}
+    </div>
+  );
+}
+
 function Types() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [name, setName] = useState("");
@@ -558,6 +687,7 @@ export default function Admin() {
         ))}
       </div>
 
+      {tab === "banner" && <BannerAdmin />}
       {tab === "moderacion" && <Moderation />}
       {tab === "ubicaciones" && <Locations />}
       {tab === "tipos" && <Types />}

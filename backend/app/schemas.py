@@ -360,3 +360,20 @@ class MediaLimits(BaseModel):
     max_videos: int
     max_image_mb: int
     max_video_mb: int
+
+
+class BannerIn(BaseModel):
+    """Banner de la portada configurado desde el panel."""
+
+    title: str = Field(default="", max_length=120)
+    subtitle: str = Field(default="", max_length=240)
+    image_url: str | None = Field(default=None, max_length=500)
+    link_url: str | None = Field(default=None, max_length=500)
+    link_label: str | None = Field(default=None, max_length=40)
+    active: bool = True
+
+
+class BannerOut(BannerIn):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int

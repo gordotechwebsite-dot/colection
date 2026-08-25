@@ -497,3 +497,13 @@ def delete_listing(listing_id: int, db: Session = Depends(get_db)):
     listing = crud.get_listing_or_404(db, listing_id)
     db.delete(listing)
     db.commit()
+
+
+@router.get("/banner", response_model=schemas.BannerOut)
+def get_banner(db: Session = Depends(get_db)):
+    return crud.get_banner(db)
+
+
+@router.put("/banner", response_model=schemas.BannerOut)
+def update_banner(payload: schemas.BannerIn, db: Session = Depends(get_db)):
+    return crud.update_banner(db, payload)
