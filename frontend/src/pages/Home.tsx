@@ -9,14 +9,6 @@ import { api } from "../lib/api";
 import type { FilterState } from "../lib/filters";
 import type { Banner, Category, Country, Listing } from "../lib/types";
 
-const SORTS = [
-  { value: "relevance", label: "Relevancia" },
-  { value: "recent", label: "Más recientes" },
-  { value: "price_asc", label: "Menor precio" },
-  { value: "price_desc", label: "Mayor precio" },
-  { value: "views", label: "Más vistos" },
-];
-
 const PAGE_SIZE = 24;
 
 export default function Home() {
@@ -39,7 +31,6 @@ export default function Home() {
     }),
     [searchParams],
   );
-  const sort = searchParams.get("sort") ?? "relevance";
   const page = Number(searchParams.get("page") ?? "1");
 
   useEffect(() => {
@@ -62,7 +53,7 @@ export default function Home() {
     });
     const q = searchParams.get("q");
     if (q) params.set("q", q);
-    params.set("sort", sort);
+    params.set("sort", "relevance");
     params.set("limit", String(PAGE_SIZE));
     params.set("offset", String((page - 1) * PAGE_SIZE));
 
@@ -76,7 +67,7 @@ export default function Home() {
       })
       .catch(() => setError("No pudimos cargar las publicaciones"))
       .finally(() => setLoading(false));
-  }, [filters, searchParams, sort, page]);
+  }, [filters, searchParams, page]);
 
   function update(next: Partial<Record<string, string>>) {
     const params = new URLSearchParams(searchParams);
@@ -125,26 +116,6 @@ export default function Home() {
           })
         }
       />
-
-      <div className="flex flex-wrap items-center gap-3">
-        <p className="text-sm text-neutral-600">
-          {loading ? "Cargando…" : `${total} publicaciones`}
-        </p>
-        <label className="ml-auto flex items-center gap-2 text-sm">
-          Ordenar por
-          <select
-            className="filter-btn w-auto"
-            value={sort}
-            onChange={(event) => update({ sort: event.target.value })}
-          >
-            {SORTS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
 
       {error && <p className="card p-4 text-sm text-brand-700">{error}</p>}
 
