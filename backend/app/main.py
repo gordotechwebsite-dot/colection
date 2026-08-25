@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
@@ -226,3 +227,20 @@ def register_contact(listing_id: int, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(listing)
     return serializers.listing_out(listing)
+
+
+# Si el frontend está compilado, se sirve desde la misma URL que la API.
+if config.FRONTEND_DIST.is_dir():
+    app.mount(
+        "/assets",
+        StaticFiles(directory=config.FRONTEND_DIST / "assets"),
+        name="assets",
+    )
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def spa(full_path: str):
+        """Sirve el archivo pedido o el index para las rutas del router."""
+        candidate = (config.FRONTEND_DIST / full_path).resolve()
+        if full_path and config.FRONTEND_DIST in candidate.parents and candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(config.FRONTEND_DIST / "index.html")
