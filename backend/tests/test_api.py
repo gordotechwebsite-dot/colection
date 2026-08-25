@@ -282,6 +282,18 @@ def test_admin_creates_edits_and_deactivates_listing(location):
     assert [item["kind"] for item in edited.json()["media"]].count("video") == 1
     assert edited.json()["specs"][0]["label"] == "Hecho en"
 
+    # Guardar dos veces la misma característica no debe chocar con el índice único.
+    spec_filter = next(item for item in client.get("/api/filters").json() if item["options"])
+    values = {str(spec_filter["id"]): spec_filter["options"][0]["id"]}
+    for _ in range(2):
+        again = client.patch(
+            f"/api/admin/listings/{listing['id']}",
+            json={"filter_values": values},
+            headers=ADMIN_HEADERS,
+        )
+        assert again.status_code == 200, again.text
+        assert again.json()["filters"][0]["filter_id"] == spec_filter["id"]
+
     off = client.patch(
         f"/api/admin/listings/{listing['id']}",
         json={"active": False},

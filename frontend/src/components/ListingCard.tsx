@@ -21,12 +21,21 @@ export default function ListingCard({ listing }: { listing: Listing }) {
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
         {cover && (
-          <img
-            src={mediaUrl(cover.url)}
-            alt={listing.title}
-            loading="lazy"
-            className="h-full w-full object-cover transition group-hover:scale-105"
-          />
+          <>
+            <img
+              src={mediaUrl(cover.url)}
+              alt=""
+              aria-hidden
+              loading="lazy"
+              className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl"
+            />
+            <img
+              src={mediaUrl(cover.url)}
+              alt={listing.title}
+              loading="lazy"
+              className="relative h-full w-full object-contain transition group-hover:scale-105"
+            />
+          </>
         )}
         <span
           className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
