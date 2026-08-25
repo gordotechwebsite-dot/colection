@@ -254,4 +254,8 @@ if config.FRONTEND_DIST.is_dir():
         candidate = (config.FRONTEND_DIST / full_path).resolve()
         if full_path and config.FRONTEND_DIST in candidate.parents and candidate.is_file():
             return FileResponse(candidate)
-        return FileResponse(config.FRONTEND_DIST / "index.html")
+        # El index no se cachea para que el navegador siempre pida la última versión.
+        return FileResponse(
+            config.FRONTEND_DIST / "index.html",
+            headers={"Cache-Control": "no-store"},
+        )

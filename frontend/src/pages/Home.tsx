@@ -22,7 +22,9 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const [started, setStarted] = useState(false);
-  const useDefaults = !started && [...searchParams.keys()].length === 0;
+  const useDefaults =
+    !started &&
+    !["country", "city", "zone", "category"].some((key) => searchParams.get(key));
 
   const filters = useMemo<FilterState>(
     () =>
@@ -41,14 +43,14 @@ export default function Home() {
   useEffect(() => {
     if (started) return;
     if (useDefaults) {
-      const initial = new URLSearchParams();
+      const initial = new URLSearchParams(searchParams);
       Object.entries(DEFAULT_FILTERS).forEach(([key, value]) => {
         if (value) initial.set(key, value);
       });
       setSearchParams(initial, { replace: true });
     }
     setStarted(true);
-  }, [started, useDefaults, setSearchParams]);
+  }, [started, useDefaults, searchParams, setSearchParams]);
 
   useEffect(() => {
     Promise.all([api.countries(), api.categories()])
