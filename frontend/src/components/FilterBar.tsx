@@ -32,9 +32,9 @@ function Combo({
   const [query, setQuery] = useState<string | null>(null);
   const selected = options.find((option) => option.slug === value);
   const text = query ?? selected?.name ?? "";
-  const matches = options.filter((option) =>
-    option.name.toLowerCase().includes((query ?? "").trim().toLowerCase()),
-  );
+  // Al abrir se ve la opción elegida y la lista completa; al escribir se filtra.
+  const needle = query === null || query === selected?.name ? "" : query.trim().toLowerCase();
+  const matches = options.filter((option) => option.name.toLowerCase().includes(needle));
 
   function pick(option: Option | null) {
     onChange(option?.slug ?? "");
@@ -59,7 +59,10 @@ function Combo({
         disabled={disabled}
         value={text}
         onChange={(event) => setQuery(event.target.value)}
-        onFocus={() => setQuery("")}
+        onFocus={(event) => {
+          setQuery(selected?.name ?? "");
+          event.target.select();
+        }}
       />
       {query !== null && !disabled && (
         <ul className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-white/40 bg-white/70 py-1 shadow-xl backdrop-blur-md">
