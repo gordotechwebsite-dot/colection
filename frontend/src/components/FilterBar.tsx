@@ -1,7 +1,6 @@
-import { RotateCcw } from "lucide-react";
 import { useRef, useState } from "react";
 
-import { EMPTY_FILTERS, type FilterState } from "../lib/filters";
+import type { FilterState } from "../lib/filters";
 import type { Category, Country } from "../lib/types";
 
 interface Props {
@@ -131,15 +130,6 @@ export default function FilterBar({ countries, categories, value, onChange }: Pr
           onChange={(category) => onChange({ ...value, category })}
         />
       </div>
-      {(value.country || value.city || value.zone || value.category) && (
-        <button
-          type="button"
-          className="btn-ghost mt-3"
-          onClick={() => onChange(EMPTY_FILTERS)}
-        >
-          <RotateCcw size={14} /> Limpiar filtros
-        </button>
-      )}
     </div>
   );
 }
