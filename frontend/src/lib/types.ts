@@ -66,10 +66,13 @@ export interface Spec {
   position?: number;
 }
 
+export type SellerType = "agency" | "independent";
+
 export interface Seller {
   id: number;
   public_id: string;
   name: string;
+  seller_type: SellerType;
   contact_channel: ContactChannel;
   whatsapp?: string | null;
   instagram?: string | null;

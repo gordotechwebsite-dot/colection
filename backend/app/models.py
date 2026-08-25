@@ -145,6 +145,7 @@ class Seller(Base):
     name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
+    seller_type = Column(String, default="independent", nullable=False)
     contact_channel = Column(String, default=CHANNEL_WHATSAPP, nullable=False)
     whatsapp = Column(String, nullable=True)
     instagram = Column(String, nullable=True)

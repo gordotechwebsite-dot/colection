@@ -1,4 +1,5 @@
 import { RotateCcw } from "lucide-react";
+import { useState } from "react";
 
 import { EMPTY_FILTERS, type FilterState } from "../lib/filters";
 import type { Category, Country } from "../lib/types";
@@ -10,7 +11,12 @@ interface Props {
   onChange: (value: FilterState) => void;
 }
 
-function Select({
+interface Option {
+  slug: string;
+  name: string;
+}
+
+function Combo({
   label,
   value,
   options,
@@ -19,27 +25,70 @@ function Select({
 }: {
   label: string;
   value: string;
-  options: { slug: string; name: string }[];
+  options: Option[];
   disabled?: boolean;
   onChange: (value: string) => void;
 }) {
+  const [query, setQuery] = useState<string | null>(null);
+  const selected = options.find((option) => option.slug === value);
+  const text = query ?? selected?.name ?? "";
+  const matches = options.filter((option) =>
+    option.name.toLowerCase().includes((query ?? "").trim().toLowerCase()),
+  );
+
+  function pick(option: Option | null) {
+    onChange(option?.slug ?? "");
+    setQuery(null);
+  }
+
   return (
-    <label className="block min-w-0">
+    <div
+      className="relative min-w-0"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setQuery(null);
+        }
+      }}
+    >
       <span className="label text-xs">{label}</span>
-      <select
-        className={`filter-btn truncate px-2 py-1.5 text-xs ${value ? "filter-btn-active" : ""}`}
-        value={value}
+      <input
+        className={`filter-btn w-full truncate px-2 py-1.5 text-xs ${
+          value ? "filter-btn-active" : ""
+        }`}
+        placeholder={disabled ? "—" : "Todas"}
         disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
-      >
-        <option value="">{disabled ? "—" : "Todas"}</option>
-        {options.map((option) => (
-          <option key={option.slug} value={option.slug}>
-            {option.name}
-          </option>
-        ))}
-      </select>
-    </label>
+        value={text}
+        onChange={(event) => setQuery(event.target.value)}
+        onFocus={() => setQuery("")}
+      />
+      {query !== null && !disabled && (
+        <ul className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-white/40 bg-white/70 py-1 shadow-xl backdrop-blur-md">
+          <li>
+            <button
+              type="button"
+              className="block w-full px-3 py-1.5 text-left text-xs text-neutral-500 hover:bg-brand-50"
+              onClick={() => pick(null)}
+            >
+              Todas
+            </button>
+          </li>
+          {matches.map((option) => (
+            <li key={option.slug}>
+              <button
+                type="button"
+                className="block w-full px-3 py-1.5 text-left text-xs hover:bg-brand-50"
+                onClick={() => pick(option)}
+              >
+                {option.name}
+              </button>
+            </li>
+          ))}
+          {matches.length === 0 && (
+            <li className="px-3 py-1.5 text-xs text-neutral-500">Sin resultados</li>
+          )}
+        </ul>
+      )}
+    </div>
   );
 }
 
@@ -52,27 +101,27 @@ export default function FilterBar({ countries, categories, value, onChange }: Pr
   return (
     <div className="card p-3">
       <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-        <Select
+        <Combo
           label="País"
           value={value.country}
           options={countries}
           onChange={(country) => onChange({ ...value, country, city: "", zone: "" })}
         />
-        <Select
+        <Combo
           label="Ciudad"
           value={value.city}
           options={cities}
           disabled={!country}
           onChange={(city) => onChange({ ...value, city, zone: "" })}
         />
-        <Select
+        <Combo
           label="Zona"
           value={value.zone}
           options={zones}
           disabled={!city}
           onChange={(zone) => onChange({ ...value, zone })}
         />
-        <Select
+        <Combo
           label="Tipo"
           value={value.category}
           options={categories}

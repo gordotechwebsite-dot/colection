@@ -6,7 +6,7 @@ import FilterBar from "../components/FilterBar";
 import ListingCard from "../components/ListingCard";
 import HomeBanner from "../components/HomeBanner";
 import { api } from "../lib/api";
-import type { FilterState } from "../lib/filters";
+import { DEFAULT_FILTERS, type FilterState } from "../lib/filters";
 import type { Banner, Category, Country, Listing } from "../lib/types";
 
 const PAGE_SIZE = 24;
@@ -32,6 +32,16 @@ export default function Home() {
     [searchParams],
   );
   const page = Number(searchParams.get("page") ?? "1");
+
+  useEffect(() => {
+    if ([...searchParams.keys()].length === 0) {
+      const initial = new URLSearchParams();
+      Object.entries(DEFAULT_FILTERS).forEach(([key, value]) => {
+        if (value) initial.set(key, value);
+      });
+      setSearchParams(initial, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     Promise.all([api.countries(), api.categories()])

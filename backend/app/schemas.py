@@ -18,6 +18,7 @@ WHATSAPP_RE = re.compile(r"^\+?[0-9]{8,15}$")
 INSTAGRAM_RE = re.compile(r"^[A-Za-z0-9._]{1,30}$")
 
 ContactChannel = Literal["whatsapp", "instagram"]
+SellerType = Literal["agency", "independent"]
 
 
 def normalize_whatsapp(value: str) -> str:
@@ -201,6 +202,7 @@ class ContactMixin(BaseModel):
 
 class SellerRegister(ContactMixin):
     name: str = Field(min_length=2, max_length=80)
+    seller_type: SellerType = "independent"
     email: EmailStr
     password: str = Field(min_length=8, max_length=72)
     country_id: int | None = None
@@ -214,6 +216,7 @@ class SellerLogin(BaseModel):
 
 class SellerUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=2, max_length=80)
+    seller_type: SellerType | None = None
     contact_channel: ContactChannel | None = None
     whatsapp: str | None = None
     instagram: str | None = None
@@ -239,6 +242,7 @@ class SellerOut(BaseModel):
     id: int
     public_id: str
     name: str
+    seller_type: str
     contact_channel: str
     whatsapp: str | None = None
     instagram: str | None = None
