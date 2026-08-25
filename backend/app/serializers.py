@@ -33,6 +33,25 @@ def seller_contact_url(seller: Seller, listing: Listing | None = None) -> str:
     return url
 
 
+def only_digits(value: str | None) -> str:
+    return "".join(ch for ch in (value or "") if ch.isdigit())
+
+
+def telegram_url(seller: Seller) -> str:
+    """Chat de Telegram: usuario configurado o, si no hay, el número de WhatsApp."""
+    handle = (seller.telegram or "").strip().lstrip("@")
+    if handle and not only_digits(handle):
+        return f"https://t.me/{handle}"
+    number = only_digits(handle) or only_digits(seller.whatsapp)
+    return f"https://t.me/+{number}" if number else ""
+
+
+def call_url(seller: Seller) -> str:
+    """Llamada telefónica al número configurado o al de WhatsApp."""
+    number = only_digits(seller.phone) or only_digits(seller.whatsapp)
+    return f"tel:+{number}" if number else ""
+
+
 def listing_out(listing: Listing) -> dict:
     plan = ranking.effective_plan(listing)
     channel = listing.seller.contact_channel
@@ -80,4 +99,6 @@ def listing_out(listing: Listing) -> dict:
         "contact_channel": channel,
         "contact_label": CHANNEL_LABELS.get(channel, channel),
         "contact_url": seller_contact_url(listing.seller, listing),
+        "telegram_url": telegram_url(listing.seller),
+        "call_url": call_url(listing.seller),
     }

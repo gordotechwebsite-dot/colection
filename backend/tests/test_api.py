@@ -264,6 +264,9 @@ def test_admin_creates_listing_without_seller(location):
     assert listing["verified"] is True
     assert listing["seller"]["public_id"].startswith("RB-")
     assert listing["contact_url"].startswith("https://wa.me/573001112233")
+    # Sin Telegram ni teléfono propios se usa el número de WhatsApp.
+    assert listing["telegram_url"] == "https://t.me/+573001112233"
+    assert listing["call_url"] == "tel:+573001112233"
 
     # El mismo contacto reutiliza el vendedor interno.
     again = client.post(
@@ -288,11 +291,15 @@ def test_admin_creates_listing_without_seller(location):
             "contact_value": "@tienda.movil",
             "display_name": " Sofía ",
             "verified": False,
+            "telegram": "@tienda_movil",
+            "phone": "+34 600 111 222",
         },
         headers=ADMIN_HEADERS,
     )
     assert moved.status_code == 200, moved.text
     assert moved.json()["contact_url"] == "https://ig.me/m/tienda.movil"
+    assert moved.json()["telegram_url"] == "https://t.me/tienda_movil"
+    assert moved.json()["call_url"] == "tel:+34600111222"
     assert moved.json()["display_name"] == "Sofía"
     assert moved.json()["verified"] is False
 

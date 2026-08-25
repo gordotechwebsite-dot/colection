@@ -16,7 +16,13 @@ INTERNAL_SELLER_NAME = "Redbook (interno)"
 INTERNAL_EMAIL_DOMAIN = "redbook.internal"
 
 
-def internal_seller(db: Session, channel: str | None, contact: str | None) -> models.Seller:
+def internal_seller(
+    db: Session,
+    channel: str | None,
+    contact: str | None,
+    telegram: str | None = None,
+    phone: str | None = None,
+) -> models.Seller:
     """Vendedor interno para los anuncios que crea el administrador.
 
     Se reutiliza uno por contacto, así todos los anuncios con el mismo número o
@@ -32,6 +38,7 @@ def internal_seller(db: Session, channel: str | None, contact: str | None) -> mo
 
     seller = db.query(models.Seller).filter(models.Seller.email == email).first()
     if seller:
+        apply_extra_contacts(seller, telegram, phone)
         return seller
 
     seller = models.Seller(
@@ -43,10 +50,21 @@ def internal_seller(db: Session, channel: str | None, contact: str | None) -> mo
         whatsapp=value if channel == models.CHANNEL_WHATSAPP else None,
         instagram=value if channel == models.CHANNEL_INSTAGRAM else None,
     )
+    apply_extra_contacts(seller, telegram, phone)
     db.add(seller)
     db.flush()
     seller.public_id = crud.build_public_id(seller.id)
     return seller
+
+
+def apply_extra_contacts(
+    seller: models.Seller, telegram: str | None, phone: str | None
+) -> None:
+    """Telegram y teléfono de llamada; vacíos vuelven a usar el de WhatsApp."""
+    if telegram is not None:
+        seller.telegram = telegram.strip() or None
+    if phone is not None:
+        seller.phone = phone.strip() or None
 
 
 class AdminListingCreate(schemas.ListingCreate):
@@ -55,6 +73,8 @@ class AdminListingCreate(schemas.ListingCreate):
     seller_id: int | None = None
     contact_channel: str | None = None
     contact_value: str | None = None
+    telegram: str | None = None
+    phone: str | None = None
     plan: str = ranking.PLAN_FREE
     plan_days: int = Field(default=30, ge=1, le=365)
     active: bool = True
@@ -77,6 +97,8 @@ class AdminListingUpdate(BaseModel):
     seller_id: int | None = None
     contact_channel: str | None = None
     contact_value: str | None = None
+    telegram: str | None = None
+    phone: str | None = None
     active: bool | None = None
     verified: bool | None = None
     plan: str | None = None
@@ -458,7 +480,13 @@ def create_listing(payload: AdminListingCreate, db: Session = Depends(get_db)):
         if not seller:
             raise HTTPException(status_code=400, detail="Vendedor inválido")
     else:
-        seller = internal_seller(db, payload.contact_channel, payload.contact_value)
+        seller = internal_seller(
+            db,
+            payload.contact_channel,
+            payload.contact_value,
+            payload.telegram,
+            payload.phone,
+        )
     listing = crud.create_listing(db, payload, seller, status=payload.status)
     listing.active = payload.active
     listing.verified = payload.verified
@@ -480,6 +508,8 @@ def update_listing(listing_id: int, payload: AdminListingUpdate, db: Session = D
     filter_values = data.pop("filter_values", None)
     contact_channel = data.pop("contact_channel", None)
     contact_value = data.pop("contact_value", None)
+    telegram = data.pop("telegram", None)
+    phone = data.pop("phone", None)
     data.pop("specs", None)
     data.pop("media", None)
 
@@ -488,7 +518,11 @@ def update_listing(listing_id: int, payload: AdminListingUpdate, db: Session = D
             db,
             contact_channel or listing.seller.contact_channel,
             contact_value,
+            telegram,
+            phone,
         ).id
+    else:
+        apply_extra_contacts(listing.seller, telegram, phone)
     if data.get("seller_id") is not None and not db.get(models.Seller, data["seller_id"]):
         raise HTTPException(status_code=400, detail="Vendedor inválido")
     if "category_id" in data and not db.get(models.Category, data["category_id"]):
