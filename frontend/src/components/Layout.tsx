@@ -2,13 +2,14 @@ import { Flame, LayoutDashboard, LogOut, PlusCircle } from "lucide-react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
 import { useSession } from "../lib/session";
+import VerifiedTicker from "./VerifiedTicker";
 
 export default function Layout() {
   const { seller, signOut } = useSession();
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-10">
       <header className="sticky top-0 z-20 border-b border-brand-100 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2 text-lg font-black text-brand-700">
@@ -56,6 +57,7 @@ export default function Layout() {
       <footer className="mt-10 border-t border-brand-100 bg-white py-6 text-center text-sm text-neutral-500">
         Redbook · Experiencias Indescriptibles
       </footer>
+      <VerifiedTicker />
     </div>
   );
 }
