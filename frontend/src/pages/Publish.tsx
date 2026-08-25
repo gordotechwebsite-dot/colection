@@ -16,8 +16,6 @@ import type {
 interface FormState {
   title: string;
   description: string;
-  price: string;
-  currency: string;
   category_id: string;
   country_id: string;
   city_id: string;
@@ -27,8 +25,6 @@ interface FormState {
 const EMPTY: FormState = {
   title: "",
   description: "",
-  price: "",
-  currency: "USD",
   category_id: "",
   country_id: "",
   city_id: "",
@@ -93,8 +89,6 @@ export default function Publish() {
       const result = await api.createListing({
         title: form.title,
         description: form.description,
-        price: form.price ? Number(form.price) : null,
-        currency: form.currency,
         category_id: Number(form.category_id),
         country_id: Number(form.country_id),
         city_id: form.city_id ? Number(form.city_id) : null,
@@ -185,32 +179,7 @@ export default function Publish() {
             required
           />
         </div>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div>
-            <label className="label" htmlFor="price">
-              Precio (opcional)
-            </label>
-            <input
-              id="price"
-              type="number"
-              min={0}
-              className="input"
-              value={form.price}
-              onChange={(event) => setForm({ ...form, price: event.target.value })}
-            />
-          </div>
-          <div>
-            <label className="label" htmlFor="currency">
-              Moneda
-            </label>
-            <input
-              id="currency"
-              className="input"
-              maxLength={5}
-              value={form.currency}
-              onChange={(event) => setForm({ ...form, currency: event.target.value })}
-            />
-          </div>
+        <div className="grid gap-3">
           <div>
             <label className="label" htmlFor="category">
               Tipo

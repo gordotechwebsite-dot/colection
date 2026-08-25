@@ -4,7 +4,6 @@ import { Link, useParams } from "react-router-dom";
 
 import ContactButton from "../components/ContactButton";
 import { api, mediaUrl } from "../lib/api";
-import { formatPrice } from "../lib/format";
 import type { Listing } from "../lib/types";
 
 export default function ListingDetail() {
@@ -111,7 +110,6 @@ export default function ListingDetail() {
       <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
         <div className="card space-y-3 p-4">
           <h1 className="text-lg font-bold">{listing.title}</h1>
-          <p className="text-2xl font-black text-brand-700">{formatPrice(listing)}</p>
           <p className="flex items-center gap-1 text-sm text-neutral-600">
             <MapPin size={14} />
             {[listing.zone?.name, listing.city?.name, listing.country.name]
