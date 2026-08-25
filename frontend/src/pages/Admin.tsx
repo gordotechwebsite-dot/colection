@@ -413,7 +413,11 @@ function BannerAdmin() {
           </label>
         </div>
         <label className="block">
-          <span className="label">Imagen de fondo (opcional)</span>
+          <span className="label">Imagen (opcional)</span>
+          <span className="mb-1 block text-xs text-neutral-500">
+            Si subes imagen se muestra sola y completa, sin título ni subtítulo. Ancho
+            recomendado 1600 px.
+          </span>
           <input
             className="input"
             type="file"
@@ -435,7 +439,7 @@ function BannerAdmin() {
             <img
               src={mediaUrl(form.image_url)}
               alt="Banner"
-              className="h-20 w-40 rounded-lg object-cover"
+              className="w-40 rounded-lg"
             />
             <button
               type="button"
