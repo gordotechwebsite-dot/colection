@@ -143,6 +143,8 @@ export const api = {
         admin: true,
         body: { status, rejection_reason: reason },
       }),
+    createListing: (body: unknown) =>
+      request<Listing>("/api/admin/listings", { admin: true, body }),
     updateListing: (id: number, body: unknown) =>
       request<Listing>(`/api/admin/listings/${id}`, {
         admin: true,

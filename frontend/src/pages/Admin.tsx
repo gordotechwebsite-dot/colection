@@ -2,6 +2,7 @@ import { Check, Plus, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { ApiError, api, getAdminToken, mediaUrl, setAdminToken } from "../lib/api";
+import AdminListings from "./AdminListings";
 import type {
   AdminStats,
   Banner,
@@ -12,9 +13,10 @@ import type {
   ListingStatus,
 } from "../lib/types";
 
-type Tab = "banner" | "moderacion" | "ubicaciones" | "tipos" | "filtros";
+type Tab = "anuncios" | "banner" | "moderacion" | "ubicaciones" | "tipos" | "filtros";
 
 const TABS: { value: Tab; label: string }[] = [
+  { value: "anuncios", label: "Anuncios" },
   { value: "banner", label: "Banner" },
   { value: "moderacion", label: "Moderación" },
   { value: "ubicaciones", label: "Países, ciudades y zonas" },
@@ -688,7 +690,7 @@ function Filters() {
 export default function Admin() {
   const [ready, setReady] = useState(false);
   const [checking, setChecking] = useState(Boolean(getAdminToken()));
-  const [tab, setTab] = useState<Tab>("moderacion");
+  const [tab, setTab] = useState<Tab>("anuncios");
   const [stats, setStats] = useState<AdminStats | null>(null);
 
   useEffect(() => {
@@ -756,6 +758,7 @@ export default function Admin() {
         ))}
       </div>
 
+      {tab === "anuncios" && <AdminListings />}
       {tab === "banner" && <BannerAdmin />}
       {tab === "moderacion" && <Moderation />}
       {tab === "ubicaciones" && <Locations />}
