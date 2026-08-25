@@ -48,13 +48,21 @@ export default function ListingDetail() {
     <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
       <div className="space-y-4">
         <div className="card overflow-hidden">
-          <div className="relative aspect-[4/3] bg-neutral-100">
+          <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
             {cover && (
-              <img
-                src={mediaUrl(cover.url)}
-                alt={listing.title}
-                className="h-full w-full object-cover"
-              />
+              <>
+                <img
+                  src={mediaUrl(cover.url)}
+                  alt=""
+                  aria-hidden
+                  className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl"
+                />
+                <img
+                  src={mediaUrl(cover.url)}
+                  alt={listing.title}
+                  className="relative h-full w-full object-contain"
+                />
+              </>
             )}
             {images.length > 1 && (
               <>
@@ -93,7 +101,7 @@ export default function ListingDetail() {
                   <img
                     src={mediaUrl(image.url)}
                     alt=""
-                    className="h-full w-full object-cover"
+                    className="h-full w-full bg-neutral-100 object-contain"
                   />
                 </button>
               ))}

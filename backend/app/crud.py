@@ -154,6 +154,9 @@ def apply_filter_values(
     db: Session, listing: models.Listing, filter_values: dict[int, int]
 ) -> None:
     listing.filter_values.clear()
+    # Sin este flush, SQLAlchemy inserta las filas nuevas antes de borrar las
+    # viejas y choca con el índice único (listing_id, filter_id) al reeditar.
+    db.flush()
     for filter_id, option_id in filter_values.items():
         option = db.get(models.FilterOption, option_id)
         if not option or option.filter_id != filter_id:

@@ -309,12 +309,12 @@ function ListingForm({
                 <img
                   src={mediaUrl(item.url)}
                   alt=""
-                  className="h-20 w-20 rounded-lg object-cover"
+                  className="h-20 w-20 rounded-lg bg-neutral-100 object-contain"
                 />
               ) : (
                 <video
                   src={mediaUrl(item.url)}
-                  className="h-20 w-20 rounded-lg object-cover"
+                  className="h-20 w-20 rounded-lg bg-neutral-100 object-contain"
                   muted
                 />
               )}
