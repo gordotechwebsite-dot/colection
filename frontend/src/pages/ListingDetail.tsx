@@ -1,11 +1,4 @@
-import {
-  ArrowLeft,
-  BadgeCheck,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  MapPin,
-} from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
@@ -153,25 +146,12 @@ export default function ListingDetail() {
               .filter(Boolean)
               .join(", ")}
           </p>
-          <p className="flex items-center gap-3 text-xs text-neutral-500">
-            <span className="flex items-center gap-1">
-              <Eye size={12} /> {listing.views} vistas
-            </span>
+          <p className="text-xs text-neutral-500">
             <span className="rounded-full bg-brand-50 px-2 py-0.5 text-brand-700">
               {listing.category.name}
             </span>
           </p>
           <ContactButton listing={listing} />
-        </div>
-
-        <div className="card space-y-1 p-4 text-sm">
-          <p className="flex items-center gap-2 font-semibold">
-            <BadgeCheck size={16} className="text-brand-600" /> {listing.seller.name}
-          </p>
-          <p className="text-neutral-600">ID de vendedor: {listing.seller.public_id}</p>
-          <p className="text-neutral-500">
-            Contacto por {listing.contact_label} · el mismo para todos sus anuncios
-          </p>
         </div>
 
         {listing.filters.length > 0 && (
