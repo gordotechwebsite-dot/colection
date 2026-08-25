@@ -1,17 +1,60 @@
+import re
+import secrets
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session, joinedload
 
-from . import crud, models, queries, ranking, schemas, serializers
+from . import crud, models, queries, ranking, schemas, security, serializers
 from .auth import require_admin
 from .database import get_db
 from .slugs import slugify
 
 router = APIRouter(prefix="/api/admin", tags=["admin"], dependencies=[Depends(require_admin)])
 
+INTERNAL_SELLER_NAME = "Redbook (interno)"
+INTERNAL_EMAIL_DOMAIN = "redbook.internal"
+
+
+def internal_seller(db: Session, channel: str | None, contact: str | None) -> models.Seller:
+    """Vendedor interno para los anuncios que crea el administrador.
+
+    Se reutiliza uno por contacto, así todos los anuncios con el mismo número o
+    usuario comparten el mismo ID interno.
+    """
+    channel = channel or models.CHANNEL_WHATSAPP
+    if channel not in (models.CHANNEL_WHATSAPP, models.CHANNEL_INSTAGRAM):
+        raise HTTPException(status_code=400, detail="Canal de contacto inválido")
+    value = (contact or "").strip().lstrip("@")
+    key = re.sub(r"[^a-z0-9]", "", value.lower())
+    local_part = f"interno-{channel}-{key}" if key else "interno"
+    email = f"{local_part}@{INTERNAL_EMAIL_DOMAIN}"
+
+    seller = db.query(models.Seller).filter(models.Seller.email == email).first()
+    if seller:
+        return seller
+
+    seller = models.Seller(
+        public_id="",
+        name=INTERNAL_SELLER_NAME,
+        email=email,
+        password_hash=security.hash_password(secrets.token_urlsafe(24)),
+        contact_channel=channel,
+        whatsapp=value if channel == models.CHANNEL_WHATSAPP else None,
+        instagram=value if channel == models.CHANNEL_INSTAGRAM else None,
+    )
+    db.add(seller)
+    db.flush()
+    seller.public_id = crud.build_public_id(seller.id)
+    return seller
+
 
 class AdminListingCreate(schemas.ListingCreate):
-    seller_id: int
+    # El vendedor es interno: si no se indica, el anuncio queda bajo un usuario
+    # de Redbook creado a partir del contacto.
+    seller_id: int | None = None
+    contact_channel: str | None = None
+    contact_value: str | None = None
     plan: str = ranking.PLAN_FREE
     plan_days: int = Field(default=30, ge=1, le=365)
     active: bool = True
@@ -29,6 +72,8 @@ class AdminListingUpdate(BaseModel):
     city_id: int | None = None
     zone_id: int | None = None
     seller_id: int | None = None
+    contact_channel: str | None = None
+    contact_value: str | None = None
     active: bool | None = None
     plan: str | None = None
     plan_days: int | None = Field(default=None, ge=1, le=365)
@@ -404,9 +449,12 @@ def list_listings(
 def create_listing(payload: AdminListingCreate, db: Session = Depends(get_db)):
     if payload.plan not in ranking.PLANS:
         raise HTTPException(status_code=400, detail="Plan inválido")
-    seller = db.get(models.Seller, payload.seller_id)
-    if not seller:
-        raise HTTPException(status_code=400, detail="Vendedor inválido")
+    if payload.seller_id is not None:
+        seller = db.get(models.Seller, payload.seller_id)
+        if not seller:
+            raise HTTPException(status_code=400, detail="Vendedor inválido")
+    else:
+        seller = internal_seller(db, payload.contact_channel, payload.contact_value)
     listing = crud.create_listing(db, payload, seller, status=payload.status)
     listing.active = payload.active
     if payload.plan != ranking.PLAN_FREE:
@@ -425,9 +473,17 @@ def update_listing(listing_id: int, payload: AdminListingUpdate, db: Session = D
     plan = data.pop("plan", None)
     plan_days = data.pop("plan_days", None)
     filter_values = data.pop("filter_values", None)
+    contact_channel = data.pop("contact_channel", None)
+    contact_value = data.pop("contact_value", None)
     data.pop("specs", None)
     data.pop("media", None)
 
+    if contact_channel is not None or contact_value is not None:
+        data["seller_id"] = internal_seller(
+            db,
+            contact_channel or listing.seller.contact_channel,
+            contact_value,
+        ).id
     if data.get("seller_id") is not None and not db.get(models.Seller, data["seller_id"]):
         raise HTTPException(status_code=400, detail="Vendedor inválido")
     if "category_id" in data and not db.get(models.Category, data["category_id"]):
