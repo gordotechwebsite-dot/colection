@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-brand-50 text-neutral-900;
+}
+
+.input {
+  @apply w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
+}
+
+.label {
+  @apply mb-1 block text-sm font-medium text-neutral-700;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:opacity-60;
+}
+
+.btn-primary {
+  @apply btn bg-brand-600 text-white hover:bg-brand-700;
+}
+
+.btn-ghost {
+  @apply btn border border-neutral-300 bg-white text-neutral-700 hover:bg-brand-50 hover:text-brand-700;
+}
+
+/* Botones de filtro: siempre blancos, con rojo suave solo al estar activos. */
+.filter-btn {
+  @apply w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 outline-none transition hover:border-brand-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
+}
+
+.filter-btn-active {
+  @apply border-brand-500 text-brand-700;
+}
+
+.card {
+  @apply rounded-xl border border-neutral-200 bg-white shadow-sm;
+}
