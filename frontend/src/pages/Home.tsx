@@ -1,5 +1,5 @@
-import { Search } from "lucide-react";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Search, X } from "lucide-react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import FilterBar from "../components/FilterBar";
@@ -23,6 +23,8 @@ export default function Home() {
   // La búsqueda no se conserva: cada carga de la portada arranca en blanco.
   const [query, setQuery] = useState("");
   const [started, setStarted] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const useDefaults =
     !started &&
     !["country", "city", "zone", "category"].some((key) => searchParams.get(key));
@@ -142,37 +144,80 @@ export default function Home() {
     banners.find((item) => item.slot === slot && item.active) ?? null;
   const topBanner = activeBanner("home_top");
   const middleBanner = activeBanner("home_middle");
+  // Al buscar, el resto de la portada se desenfoca para destacar los resultados.
+  const dim = focused || query.trim().length > 0;
+  const dimClass = dim ? "pointer-events-none blur-sm opacity-50 transition" : "transition";
 
   return (
     <div className="space-y-5">
-      {topBanner && <HomeBanner banner={topBanner} />}
+      {topBanner && (
+        <div className={dimClass}>
+          <HomeBanner banner={topBanner} />
+        </div>
+      )}
 
-      <div className="relative">
-        <Search
-          size={16}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
-        />
-        <input
-          className="input !pl-9"
-          placeholder="¿Qué estás buscando?"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
+      <div
+        ref={searchRef}
+        className={
+          dim
+            ? "sticky top-0 z-30 -mx-4 border-b border-brand-100 bg-white/90 px-4 py-3 backdrop-blur"
+            : ""
+        }
+      >
+        <div className="relative">
+          <Search
+            size={16}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+          />
+          <input
+            className={`input !pl-9 ${dim ? "!pr-9" : ""}`}
+            placeholder="¿Qué estás buscando?"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onFocus={() => {
+              setFocused(true);
+              searchRef.current?.scrollIntoView({ block: "start" });
+            }}
+            onBlur={() => setFocused(false)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                setQuery("");
+                event.currentTarget.blur();
+              }
+            }}
+          />
+          {dim && (
+            <button
+              type="button"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-neutral-500"
+              title="Cerrar la búsqueda"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                setQuery("");
+                setFocused(false);
+              }}
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
       </div>
 
-      <FilterBar
-        countries={countries}
-        categories={categories}
-        value={filters}
-        onChange={(next) =>
-          update({
-            country: next.country,
-            city: next.city,
-            zone: next.zone,
-            category: next.category,
-          })
-        }
-      />
+      <div className={dimClass}>
+        <FilterBar
+          countries={countries}
+          categories={categories}
+          value={filters}
+          onChange={(next) =>
+            update({
+              country: next.country,
+              city: next.city,
+              zone: next.zone,
+              category: next.category,
+            })
+          }
+        />
+      </div>
 
       {error && <p className="card p-4 text-sm text-brand-700">{error}</p>}
 
