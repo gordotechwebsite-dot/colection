@@ -42,7 +42,7 @@ export default function Layout() {
                 </button>
               </>
             ) : null}
-            <Link to="/admin" className="btn-ghost" title="Panel de control">
+            <Link to="/admin" className="btn-ghost" title="Inicio de sesión">
               <LayoutDashboard size={16} />
             </Link>
           </nav>
