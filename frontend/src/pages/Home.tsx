@@ -65,6 +65,27 @@ export default function Home() {
       .catch(() => undefined);
   }, []);
 
+  // La búsqueda se aplica sola mientras se escribe, en toda la web.
+  useEffect(() => {
+    if (!started) return;
+    const text = query.trim();
+    if (text === (searchParams.get("q") ?? "")) return;
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams(searchParams);
+      if (text) {
+        params.set("q", text);
+        ["country", "city", "zone", "category"].forEach((key) =>
+          params.delete(key),
+        );
+      } else {
+        params.delete("q");
+      }
+      params.delete("page");
+      setSearchParams(params, { replace: true });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query, started, searchParams, setSearchParams]);
+
   useEffect(() => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
@@ -121,24 +142,18 @@ export default function Home() {
     <div className="space-y-5">
       {topBanner && <HomeBanner banner={topBanner} />}
 
-      <form
-        className="flex gap-2"
-        onSubmit={(event) => {
-          event.preventDefault();
-          // La búsqueda es global: se ignoran los filtros de ubicación y tipo.
-          update({ q: query, country: "", city: "", zone: "", category: "" });
-        }}
-      >
+      <div className="relative">
+        <Search
+          size={16}
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+        />
         <input
-          className="input"
+          className="input pl-9"
           placeholder="¿Qué estás buscando?"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
-        <button className="btn-primary" type="submit">
-          <Search size={16} /> Buscar
-        </button>
-      </form>
+      </div>
 
       <FilterBar
         countries={countries}
