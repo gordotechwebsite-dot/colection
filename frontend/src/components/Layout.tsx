@@ -11,11 +11,11 @@ export default function Layout() {
   return (
     <div className="min-h-screen pb-10">
       <header className="sticky top-0 z-20 border-b border-brand-100 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+        <div className="relative mx-auto flex max-w-6xl items-center justify-center gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2 text-lg font-black text-brand-700">
             <Flame size={22} /> Redbook
           </Link>
-          <nav className="ml-auto flex items-center gap-2">
+          <nav className="absolute right-4 flex items-center gap-2">
             {seller ? (
               <>
                 <Link to="/publicar" className="btn-primary">
@@ -35,11 +35,7 @@ export default function Layout() {
                   <LogOut size={16} />
                 </button>
               </>
-            ) : (
-              <Link to="/registro" className="btn-primary">
-                ANUNCIATE
-              </Link>
-            )}
+            ) : null}
             <Link to="/admin" className="btn-ghost" title="Panel de control">
               <LayoutDashboard size={16} />
             </Link>
@@ -49,6 +45,13 @@ export default function Layout() {
       <main className="mx-auto max-w-6xl px-4 py-6">
         <Outlet />
       </main>
+      {!seller && (
+        <div className="mt-6 flex justify-center px-4">
+          <Link to="/registro" className="btn-primary">
+            ANUNCIATE
+          </Link>
+        </div>
+      )}
       <footer className="mt-10 border-t border-brand-100 bg-white py-6 text-center text-sm text-neutral-500">
         Redbook · Experiencias Indescriptibles
       </footer>
