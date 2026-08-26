@@ -35,11 +35,7 @@ export default function Layout() {
                   <LogOut size={16} />
                 </button>
               </>
-            ) : (
-              <Link to="/registro" className="btn-primary">
-                ANUNCIATE
-              </Link>
-            )}
+            ) : null}
             <Link to="/admin" className="btn-ghost" title="Panel de control">
               <LayoutDashboard size={16} />
             </Link>
@@ -49,6 +45,13 @@ export default function Layout() {
       <main className="mx-auto max-w-6xl px-4 py-6">
         <Outlet />
       </main>
+      {!seller && (
+        <div className="mt-6 flex justify-center px-4">
+          <Link to="/registro" className="btn-primary">
+            ANUNCIATE
+          </Link>
+        </div>
+      )}
       <footer className="mt-10 border-t border-brand-100 bg-white py-6 text-center text-sm text-neutral-500">
         Redbook · Experiencias Indescriptibles
       </footer>
