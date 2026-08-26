@@ -8,10 +8,17 @@ TMP = tempfile.mkdtemp()
 os.environ["DATABASE_URL"] = f"sqlite:///{TMP}/test.db"
 os.environ["MEDIA_DIR"] = f"{TMP}/media"
 
-from app import config  # noqa: E402
+from app import config, limits  # noqa: E402
 from app.main import app  # noqa: E402
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def limites_limpios():
+    """Cada prueba arranca sin conteos previos de la misma IP."""
+    limits.limiter.reset()
+
 
 IMAGES = [
     {"kind": "image", "url": "/media/a.jpg"},
@@ -425,3 +432,29 @@ def test_rutas_de_la_app_responden_y_las_inventadas_dan_404():
     for path in ("/", "/admin", "/ingresar", "/registro", "/publicar", "/mi-cuenta"):
         assert client.get(path).status_code == 200
     assert client.get("/espana/no-existe").status_code == 404
+
+
+def test_limite_de_intentos_de_acceso():
+    for _ in range(limits.LOGIN[0]):
+        client.post(
+            "/api/sellers/login",
+            json={"email": "nadie@example.com", "password": "mala"},
+        )
+    bloqueado = client.post(
+        "/api/sellers/login",
+        json={"email": "nadie@example.com", "password": "mala"},
+    )
+    assert bloqueado.status_code == 429
+
+
+def test_las_vistas_no_se_repiten_desde_la_misma_ip():
+    primera = client.get("/api/listings/1").json()["views"]
+    segunda = client.get("/api/listings/1").json()["views"]
+    assert segunda == primera
+
+
+def test_los_accesos_correctos_no_gastan_el_limite():
+    register("limites@example.com")
+    credenciales = {"email": "limites@example.com", "password": "supersecreta"}
+    for _ in range(limits.LOGIN[0] + 5):
+        assert client.post("/api/sellers/login", json=credenciales).status_code == 200
