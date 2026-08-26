@@ -11,6 +11,9 @@ MEDIA_URL = "/media"
 # Build del frontend; si existe, la API también sirve la web en la misma URL.
 FRONTEND_DIST = Path(os.getenv("FRONTEND_DIST", BASE_DIR.parent / "frontend" / "dist")).resolve()
 
+# Dominio público; se usa en sitemap.xml y robots.txt.
+SITE_URL = os.getenv("SITE_URL", "https://red-book.space").rstrip("/")
+
 MIN_IMAGES = int(os.getenv("MIN_IMAGES", "3"))
 MAX_IMAGES = int(os.getenv("MAX_IMAGES", "10"))
 MAX_VIDEOS = int(os.getenv("MAX_VIDEOS", "1"))
