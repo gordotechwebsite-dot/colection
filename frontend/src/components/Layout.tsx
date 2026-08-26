@@ -1,5 +1,6 @@
 import { Flame, LayoutDashboard, LogOut, PlusCircle } from "lucide-react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import { useSession } from "../lib/session";
 import VerifiedTicker from "./VerifiedTicker";
@@ -7,6 +8,11 @@ import VerifiedTicker from "./VerifiedTicker";
 export default function Layout() {
   const { seller, signOut } = useSession();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [pathname]);
 
   return (
     <div className="min-h-screen pb-10">
