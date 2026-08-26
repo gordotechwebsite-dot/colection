@@ -20,7 +20,8 @@ export default function Home() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState(searchParams.get("q") ?? "");
+  // La búsqueda no se conserva: cada carga de la portada arranca en blanco.
+  const [query, setQuery] = useState("");
   const [started, setStarted] = useState(false);
   const useDefaults =
     !started &&
@@ -42,11 +43,14 @@ export default function Home() {
 
   useEffect(() => {
     if (started) return;
+    const initial = new URLSearchParams(searchParams);
+    initial.delete("q");
     if (useDefaults) {
-      const initial = new URLSearchParams(searchParams);
       Object.entries(DEFAULT_FILTERS).forEach(([key, value]) => {
         if (value) initial.set(key, value);
       });
+    }
+    if (initial.toString() !== searchParams.toString()) {
       setSearchParams(initial, { replace: true });
     }
     setStarted(true);
@@ -87,6 +91,7 @@ export default function Home() {
   }, [query, started, searchParams, setSearchParams]);
 
   useEffect(() => {
+    if (!started) return;
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params.set(key, value);
@@ -116,7 +121,7 @@ export default function Home() {
     return () => {
       current = false;
     };
-  }, [filters, searchParams, page]);
+  }, [filters, searchParams, page, started]);
 
   function update(next: Partial<Record<string, string>>) {
     const params = new URLSearchParams(searchParams);
@@ -148,7 +153,7 @@ export default function Home() {
           className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
         />
         <input
-          className="input pl-9"
+          className="input !pl-9"
           placeholder="¿Qué estás buscando?"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
