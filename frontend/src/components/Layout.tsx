@@ -36,14 +36,9 @@ export default function Layout() {
                 </button>
               </>
             ) : (
-              <>
-                <Link to="/ingresar" className="btn-ghost">
-                  Ingresar
-                </Link>
-                <Link to="/registro" className="btn-primary">
-                  ANUNCIATE
-                </Link>
-              </>
+              <Link to="/registro" className="btn-primary">
+                ANUNCIATE
+              </Link>
             )}
             <Link to="/admin" className="btn-ghost" title="Panel de control">
               <LayoutDashboard size={16} />
