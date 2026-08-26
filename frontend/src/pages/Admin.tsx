@@ -1,5 +1,6 @@
 import { Check, Plus, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { ApiError, api, getAdminToken, mediaUrl, setAdminToken } from "../lib/api";
 import AdminListings from "./AdminListings";
@@ -73,6 +74,12 @@ function AdminLogin({ onReady }: { onReady: () => void }) {
       </div>
       {error && <p className="text-sm text-brand-700">{error}</p>}
       <button className="btn-primary w-full">Entrar</button>
+      <p className="text-center text-xs text-neutral-500">
+        ¿Eres vendedor?{" "}
+        <Link to="/ingresar" className="font-semibold text-brand-700">
+          Ingresa a tu cuenta
+        </Link>
+      </p>
     </form>
   );
 }
