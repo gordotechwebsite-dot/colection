@@ -2,9 +2,12 @@ import secrets
 from pathlib import Path
 
 from fastapi import HTTPException, UploadFile
+from PIL import Image, UnidentifiedImageError
 
 from .config import (
     IMAGE_CONTENT_TYPES,
+    IMAGE_MAX_WIDTH,
+    IMAGE_QUALITY,
     MAX_IMAGE_BYTES,
     MAX_VIDEO_BYTES,
     MEDIA_DIR,
@@ -18,6 +21,21 @@ CHUNK_SIZE = 1024 * 1024
 def ensure_media_dir() -> Path:
     MEDIA_DIR.mkdir(parents=True, exist_ok=True)
     return MEDIA_DIR
+
+
+def optimize_image(path: Path) -> None:
+    """Reduce el ancho y recomprime la imagen para que la web cargue rápido."""
+    try:
+        with Image.open(path) as image:
+            if getattr(image, "is_animated", False):
+                return
+            image = image.convert("RGB")
+            if image.width > IMAGE_MAX_WIDTH:
+                height = round(image.height * IMAGE_MAX_WIDTH / image.width)
+                image = image.resize((IMAGE_MAX_WIDTH, height), Image.LANCZOS)
+            image.save(path, format="JPEG", quality=IMAGE_QUALITY, optimize=True)
+    except (UnidentifiedImageError, OSError, ValueError):
+        return
 
 
 def classify(upload: UploadFile) -> tuple[str, str, int]:
@@ -56,5 +74,8 @@ def save_upload(upload: UploadFile) -> tuple[str, str]:
         raise
     finally:
         upload.file.close()
+
+    if kind == "image":
+        optimize_image(destination)
 
     return kind, f"{MEDIA_URL}/{name}"
