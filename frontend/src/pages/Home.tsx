@@ -144,7 +144,7 @@ export default function Home() {
     banners.find((item) => item.slot === slot && item.active) ?? null;
   const topBanner = activeBanner("home_top");
   const middleBanner = activeBanner("home_middle");
-  // Al buscar, la barra se fija arriba y los resultados quedan justo debajo.
+  // Al buscar, la barra se queda pegada bajo el header y los resultados debajo.
   const dim = focused || query.trim().length > 0;
 
   return (
@@ -155,7 +155,7 @@ export default function Home() {
         ref={searchRef}
         className={
           dim
-            ? "fixed inset-x-0 top-0 z-30 border-b border-brand-100 bg-white/90 px-4 py-3 backdrop-blur"
+            ? "sticky top-14 z-10 -mx-4 border-b border-brand-100 bg-white/90 px-4 py-3 backdrop-blur"
             : ""
         }
       >
