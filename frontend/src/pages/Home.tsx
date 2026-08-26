@@ -148,14 +148,14 @@ export default function Home() {
   const dim = focused || query.trim().length > 0;
 
   return (
-    <div className="space-y-5">
+    <div className={`space-y-5 ${dim ? "pt-16" : ""}`}>
       {topBanner && !dim && <HomeBanner banner={topBanner} />}
 
       <div
         ref={searchRef}
         className={
           dim
-            ? "fixed inset-x-0 top-0 z-30 border-b border-brand-100 bg-white/90 px-4 py-3 backdrop-blur"
+            ? "fixed inset-x-0 top-14 z-30 border-b border-brand-100 bg-white/90 px-4 py-3 backdrop-blur"
             : ""
         }
       >
