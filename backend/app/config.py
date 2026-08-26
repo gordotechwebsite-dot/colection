@@ -15,6 +15,9 @@ MIN_IMAGES = int(os.getenv("MIN_IMAGES", "3"))
 MAX_IMAGES = int(os.getenv("MAX_IMAGES", "10"))
 MAX_VIDEOS = int(os.getenv("MAX_VIDEOS", "1"))
 
+IMAGE_MAX_WIDTH = int(os.getenv("IMAGE_MAX_WIDTH", "1280"))
+IMAGE_QUALITY = int(os.getenv("IMAGE_QUALITY", "78"))
+
 MAX_IMAGE_BYTES = int(os.getenv("MAX_IMAGE_BYTES", str(8 * 1024 * 1024)))
 MAX_VIDEO_BYTES = int(os.getenv("MAX_VIDEO_BYTES", str(64 * 1024 * 1024)))
 
