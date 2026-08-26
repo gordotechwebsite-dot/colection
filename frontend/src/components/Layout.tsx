@@ -12,8 +12,8 @@ export default function Layout() {
     <div className="min-h-screen pb-10">
       <header className="sticky top-0 z-20 border-b border-brand-100 bg-white/95 backdrop-blur">
         <div className="relative mx-auto flex max-w-6xl items-center justify-center gap-3 px-4 py-3">
-          <Link to="/" className="flex items-center gap-2 text-lg font-black text-brand-700">
-            <Flame size={22} /> Redbook
+          <Link to="/" className="flex items-center gap-2 text-2xl font-black text-brand-700">
+            <Flame size={29} /> Redbook
           </Link>
           <nav className="absolute right-4 flex items-center gap-2">
             {seller ? (
