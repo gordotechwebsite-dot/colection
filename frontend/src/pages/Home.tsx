@@ -144,23 +144,18 @@ export default function Home() {
     banners.find((item) => item.slot === slot && item.active) ?? null;
   const topBanner = activeBanner("home_top");
   const middleBanner = activeBanner("home_middle");
-  // Al buscar, el resto de la portada se desenfoca para destacar los resultados.
+  // Al buscar, la barra se fija arriba y los resultados quedan justo debajo.
   const dim = focused || query.trim().length > 0;
-  const dimClass = dim ? "pointer-events-none blur-sm opacity-50 transition" : "transition";
 
   return (
     <div className="space-y-5">
-      {topBanner && (
-        <div className={dimClass}>
-          <HomeBanner banner={topBanner} />
-        </div>
-      )}
+      {topBanner && !dim && <HomeBanner banner={topBanner} />}
 
       <div
         ref={searchRef}
         className={
           dim
-            ? "sticky top-0 z-30 -mx-4 border-b border-brand-100 bg-white/90 px-4 py-3 backdrop-blur"
+            ? "fixed inset-x-0 top-0 z-30 border-b border-brand-100 bg-white/90 px-4 py-3 backdrop-blur"
             : ""
         }
       >
@@ -176,7 +171,7 @@ export default function Home() {
             onChange={(event) => setQuery(event.target.value)}
             onFocus={() => {
               setFocused(true);
-              searchRef.current?.scrollIntoView({ block: "start" });
+              window.scrollTo({ top: 0 });
             }}
             onBlur={() => setFocused(false)}
             onKeyDown={(event) => {
@@ -203,7 +198,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className={dimClass}>
+      {!dim && (
         <FilterBar
           countries={countries}
           categories={categories}
@@ -217,7 +212,7 @@ export default function Home() {
             })
           }
         />
-      </div>
+      )}
 
       {error && <p className="card p-4 text-sm text-brand-700">{error}</p>}
 
