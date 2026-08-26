@@ -54,24 +54,20 @@ function AdminLogin({ onReady }: { onReady: () => void }) {
           .then(onReady)
           .catch(() => {
             setAdminToken(null);
-            setError("Token inválido");
+            setError("Contraseña inválida");
           });
       }}
     >
-      <h1 className="text-xl font-bold text-brand-700">Panel de control</h1>
-      <div>
-        <label className="label" htmlFor="admin-token">
-          Token de administrador
-        </label>
-        <input
-          id="admin-token"
-          type="password"
-          className="input"
-          value={token}
-          onChange={(event) => setToken(event.target.value)}
-          required
-        />
-      </div>
+      <h1 className="text-xl font-bold text-brand-700">Inicio de sesión</h1>
+      <input
+        id="admin-token"
+        type="password"
+        className="input"
+        aria-label="Contraseña"
+        value={token}
+        onChange={(event) => setToken(event.target.value)}
+        required
+      />
       {error && <p className="text-sm text-brand-700">{error}</p>}
       <button className="btn-primary w-full">Entrar</button>
       <p className="text-center text-xs text-neutral-500">
