@@ -8,6 +8,7 @@ TMP = tempfile.mkdtemp()
 os.environ["DATABASE_URL"] = f"sqlite:///{TMP}/test.db"
 os.environ["MEDIA_DIR"] = f"{TMP}/media"
 
+from app import config  # noqa: E402
 from app.main import app  # noqa: E402
 
 client = TestClient(app)
@@ -396,3 +397,31 @@ def test_robots_apunta_al_sitemap():
     response = client.get("/robots.txt")
     assert response.status_code == 200
     assert "Sitemap:" in response.text
+
+
+frontend_compilado = pytest.mark.skipif(
+    not (config.FRONTEND_DIST / "index.html").is_file(),
+    reason="frontend sin compilar en este entorno",
+)
+
+
+@frontend_compilado
+def test_index_lleva_metadatos_de_la_ubicacion():
+    body = client.get("/espana/barcelona/sagrada-familia").text
+    assert 'property="og:title"' in body
+    assert "Sagrada" in body
+    assert 'rel="canonical"' in body
+
+
+@frontend_compilado
+def test_index_de_anuncio_lleva_imagen_y_datos_estructurados():
+    body = client.get("/anuncio/1").text
+    assert 'property="og:image"' in body
+    assert "application/ld+json" in body
+
+
+@frontend_compilado
+def test_rutas_de_la_app_responden_y_las_inventadas_dan_404():
+    for path in ("/", "/admin", "/ingresar", "/registro", "/publicar", "/mi-cuenta"):
+        assert client.get(path).status_code == 200
+    assert client.get("/espana/no-existe").status_code == 404
