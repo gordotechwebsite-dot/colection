@@ -627,9 +627,11 @@ export default function AdminListings() {
           <div key={listing.id} className="card flex flex-wrap items-center gap-3 p-3">
             <div className="min-w-0 flex-1">
               <p className="truncate font-semibold">{listing.title}</p>
+              <p className="truncate text-xs text-neutral-600">
+                Nombre: {listing.display_name || "—"}
+              </p>
               <p className="text-xs text-neutral-500">
-                {listing.plan_label} · {listing.status_label} ·{" "}
-                {listing.active ? "Activo" : "Desactivado"} · {listing.category.name} ·{" "}
+                {listing.plan_label} · {listing.status_label} · {listing.category.name} ·{" "}
                 {[listing.zone?.name, listing.city?.name, listing.country.name]
                   .filter(Boolean)
                   .join(", ")}
@@ -659,12 +661,21 @@ export default function AdminListings() {
             </select>
             <button
               type="button"
-              className="btn-ghost px-3 py-1 text-xs"
+              role="switch"
+              aria-checked={listing.active}
+              title={listing.active ? "Activo" : "Desactivado"}
+              className={`flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition ${
+                listing.active ? "bg-brand-600" : "bg-neutral-300"
+              }`}
               onClick={() =>
                 run(api.admin.updateListing(listing.id, { active: !listing.active }))
               }
             >
-              {listing.active ? "Desactivar" : "Activar"}
+              <span
+                className={`h-5 w-5 rounded-full bg-white shadow transition ${
+                  listing.active ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
             </button>
             <button
               type="button"
