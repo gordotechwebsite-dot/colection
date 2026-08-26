@@ -11,6 +11,7 @@ from .database import Base, engine, ensure_schema, get_db
 from .deps import current_seller
 from .seed import seed
 from .sellers import router as sellers_router
+from .sitemap import router as sitemap_router
 
 Base.metadata.create_all(bind=engine)
 ensure_schema()
@@ -30,6 +31,7 @@ media.ensure_media_dir()
 app.mount(config.MEDIA_URL, StaticFiles(directory=config.MEDIA_DIR), name="media")
 app.include_router(admin_router)
 app.include_router(sellers_router)
+app.include_router(sitemap_router)
 
 
 @app.get("/api/health")

@@ -6,6 +6,8 @@ import ContactButton from "../components/ContactButton";
 import LocationMap from "../components/LocationMap";
 import VerifiedBadge from "../components/VerifiedBadge";
 import { api, mediaUrl } from "../lib/api";
+import { listingPath } from "../lib/routes";
+import { usePageSeo } from "../lib/seo";
 import type { Listing } from "../lib/types";
 
 export default function ListingDetail() {
@@ -21,6 +23,12 @@ export default function ListingDetail() {
       .then(setListing)
       .catch(() => setError("No encontramos esta publicación"));
   }, [id]);
+
+  usePageSeo(
+    listing ? `${listing.title} | Redbook` : "Redbook",
+    listing?.description?.slice(0, 160) ?? "Clasificados Redbook",
+    listing ? listingPath(listing.id, listing.title) : "/",
+  );
 
   if (error) {
     return (

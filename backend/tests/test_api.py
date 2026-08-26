@@ -383,3 +383,16 @@ def test_delete_country_reports_listings_and_forces():
     )
     assert forced.status_code == 204, forced.text
     assert country["id"] not in [item["id"] for item in client.get("/api/countries").json()]
+
+
+def test_sitemap_incluye_rutas_de_ubicacion():
+    response = client.get("/sitemap.xml")
+    assert response.status_code == 200
+    body = response.text
+    assert "/espana/barcelona/sagrada-familia" in body
+
+
+def test_robots_apunta_al_sitemap():
+    response = client.get("/robots.txt")
+    assert response.status_code == 200
+    assert "Sitemap:" in response.text

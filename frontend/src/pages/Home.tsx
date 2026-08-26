@@ -1,18 +1,22 @@
 import { Search, X } from "lucide-react";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import FilterBar from "../components/FilterBar";
 import ListingCard from "../components/ListingCard";
 import HomeBanner from "../components/HomeBanner";
 import { api } from "../lib/api";
 import { DEFAULT_FILTERS, type FilterState } from "../lib/filters";
+import { locationPath } from "../lib/routes";
+import { usePageSeo } from "../lib/seo";
 import type { Banner, Category, Country, Listing } from "../lib/types";
 
 const PAGE_SIZE = 24;
 
 export default function Home() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const path = useParams<{ country?: string; city?: string; zone?: string }>();
   const [countries, setCountries] = useState<Country[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
@@ -25,38 +29,34 @@ export default function Home() {
   const [started, setStarted] = useState(false);
   const [focused, setFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
-  const useDefaults =
-    !started &&
-    !["country", "city", "zone", "category"].some((key) => searchParams.get(key));
+  // Sin ubicación en la ruta ni búsqueda, la portada abre en la ubicación por defecto.
+  const useDefaults = !started && !path.country && !searchParams.get("q");
 
   const filters = useMemo<FilterState>(
     () =>
       useDefaults
         ? DEFAULT_FILTERS
         : {
-            country: searchParams.get("country") ?? "",
-            city: searchParams.get("city") ?? "",
-            zone: searchParams.get("zone") ?? "",
+            country: path.country ?? searchParams.get("country") ?? "",
+            city: path.city ?? searchParams.get("city") ?? "",
+            zone: path.zone ?? searchParams.get("zone") ?? "",
             category: searchParams.get("category") ?? "",
           },
-    [searchParams, useDefaults],
+    [path, searchParams, useDefaults],
   );
   const page = Number(searchParams.get("page") ?? "1");
 
   useEffect(() => {
     if (started) return;
-    const initial = new URLSearchParams(searchParams);
-    initial.delete("q");
-    if (useDefaults) {
-      Object.entries(DEFAULT_FILTERS).forEach(([key, value]) => {
-        if (value) initial.set(key, value);
-      });
-    }
-    if (initial.toString() !== searchParams.toString()) {
-      setSearchParams(initial, { replace: true });
-    }
     setStarted(true);
-  }, [started, useDefaults, searchParams, setSearchParams]);
+    const params = new URLSearchParams(searchParams);
+    params.delete("q");
+    // Las URL viejas con ?country=... pasan a la ruta equivalente.
+    ["country", "city", "zone"].forEach((key) => params.delete(key));
+    const target = locationPath(useDefaults ? DEFAULT_FILTERS : filters);
+    const search = params.toString();
+    navigate(search ? `${target}?${search}` : target, { replace: true });
+  }, [started, useDefaults, filters, searchParams, navigate]);
 
   useEffect(() => {
     Promise.all([api.countries(), api.categories()])
@@ -77,20 +77,11 @@ export default function Home() {
     const text = query.trim();
     if (text === (searchParams.get("q") ?? "")) return;
     const timer = setTimeout(() => {
-      const params = new URLSearchParams(searchParams);
-      if (text) {
-        params.set("q", text);
-        ["country", "city", "zone", "category"].forEach((key) =>
-          params.delete(key),
-        );
-      } else {
-        params.delete("q");
-      }
-      params.delete("page");
-      setSearchParams(params, { replace: true });
+      // La búsqueda es global: sale de la ruta de ubicación y del tipo.
+      navigate(text ? `/?q=${encodeURIComponent(text)}` : "/", { replace: true });
     }, 300);
     return () => clearTimeout(timer);
-  }, [query, started, searchParams, setSearchParams]);
+  }, [query, started, searchParams, navigate]);
 
   useEffect(() => {
     if (!started) return;
@@ -125,15 +116,31 @@ export default function Home() {
     };
   }, [filters, searchParams, page, started]);
 
-  function update(next: Partial<Record<string, string>>) {
-    const params = new URLSearchParams(searchParams);
-    Object.entries(next).forEach(([key, value]) => {
-      if (value) params.set(key, value);
-      else params.delete(key);
-    });
-    params.delete("page");
-    setSearchParams(params);
+  function update(next: FilterState) {
+    const params = new URLSearchParams();
+    if (next.category) params.set("category", next.category);
+    const search = params.toString();
+    const target = locationPath(next);
+    navigate(search ? `${target}?${search}` : target);
   }
+
+  function goToPage(next: number) {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", String(next));
+    navigate(`${locationPath(filters)}?${params.toString()}`);
+  }
+
+  const country = countries.find((item) => item.slug === filters.country);
+  const city = country?.cities.find((item) => item.slug === filters.city);
+  const zone = city?.zones.find((item) => item.slug === filters.zone);
+  const place = [zone?.name, city?.name, country?.name].filter(Boolean).join(", ");
+  usePageSeo(
+    place ? `Anuncios en ${place} | Redbook` : "Redbook, clasificados globales",
+    place
+      ? `Anuncios verificados en ${place}. Fotos, video y contacto directo por WhatsApp.`
+      : "Clasificados globales con fotos, video y contacto directo por WhatsApp.",
+    locationPath(filters),
+  );
 
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const groups = ["top", "featured", "free"].map((plan) => ({
@@ -203,14 +210,7 @@ export default function Home() {
           countries={countries}
           categories={categories}
           value={filters}
-          onChange={(next) =>
-            update({
-              country: next.country,
-              city: next.city,
-              zone: next.zone,
-              category: next.category,
-            })
-          }
+          onChange={update}
         />
       )}
 
@@ -222,7 +222,7 @@ export default function Home() {
           <button
             type="button"
             className="font-semibold text-brand-700 underline"
-            onClick={() => setSearchParams(new URLSearchParams())}
+            onClick={() => navigate("/")}
           >
             limpia la búsqueda
           </button>
@@ -250,11 +250,7 @@ export default function Home() {
           <button
             className="btn-ghost"
             disabled={page <= 1}
-            onClick={() => {
-              const params = new URLSearchParams(searchParams);
-              params.set("page", String(page - 1));
-              setSearchParams(params);
-            }}
+            onClick={() => goToPage(page - 1)}
           >
             Anterior
           </button>
@@ -264,11 +260,7 @@ export default function Home() {
           <button
             className="btn-ghost"
             disabled={page >= pages}
-            onClick={() => {
-              const params = new URLSearchParams(searchParams);
-              params.set("page", String(page + 1));
-              setSearchParams(params);
-            }}
+            onClick={() => goToPage(page + 1)}
           >
             Siguiente
           </button>

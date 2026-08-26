@@ -2,6 +2,7 @@ import { MapPin, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { mediaUrl } from "../lib/api";
+import { listingPath } from "../lib/routes";
 import type { Listing } from "../lib/types";
 
 const PLAN_STYLES: Record<string, string> = {
@@ -16,7 +17,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
 
   return (
     <Link
-      to={`/anuncio/${listing.id}`}
+      to={listingPath(listing.id, listing.title)}
       className="card group overflow-hidden transition hover:-translate-y-0.5 hover:shadow-md"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
