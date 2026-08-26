@@ -65,12 +65,13 @@ def apply_filters(
         query = query.filter(models.Listing.price >= min_price)
     if max_price is not None:
         query = query.filter(models.Listing.price <= max_price)
-    if q:
-        like = f"%{q}%"
+    for word in (q or "").split():
+        like = f"%{word}%"
         query = query.filter(
             or_(
                 models.Listing.title.ilike(like),
                 models.Listing.description.ilike(like),
+                models.Listing.display_name.ilike(like),
             )
         )
     for spec in filter_specs or []:
