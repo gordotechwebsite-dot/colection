@@ -268,6 +268,10 @@ def test_admin_creates_listing_without_seller(location):
     assert listing["telegram_url"] == "https://t.me/+573001112233"
     assert listing["call_url"] == "tel:+573001112233"
 
+    # La búsqueda encuentra por el Nombre del anuncio y por palabras de la descripción.
+    by_name = client.get("/api/listings", params={"q": "valentina"})
+    assert [item["id"] for item in by_name.json()["items"]] == [listing["id"]]
+
     # El mismo contacto reutiliza el vendedor interno.
     again = client.post(
         "/api/admin/listings",

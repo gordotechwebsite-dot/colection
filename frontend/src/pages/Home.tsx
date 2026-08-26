@@ -125,7 +125,8 @@ export default function Home() {
         className="flex gap-2"
         onSubmit={(event) => {
           event.preventDefault();
-          update({ q: query });
+          // La búsqueda es global: se ignoran los filtros de ubicación y tipo.
+          update({ q: query, country: "", city: "", zone: "", category: "" });
         }}
       >
         <input
