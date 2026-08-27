@@ -640,6 +640,9 @@ export default function AdminListings() {
                 Usuario: {listing.seller.public_id} · {listing.seller.name} ·{" "}
                 {listing.contact_label}
               </p>
+              <p className="text-xs text-neutral-400">
+                {listing.views} vistas · {listing.contact_clicks} contactos
+              </p>
             </div>
             <select
               className="filter-btn w-auto text-xs"

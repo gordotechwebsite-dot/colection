@@ -1,11 +1,24 @@
-from fastapi import Depends, FastAPI, HTTPException, Query, UploadFile
+from datetime import timedelta
+
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 
-from . import config, crud, media, models, queries, ranking, schemas, serializers
+from . import (
+    config,
+    crud,
+    limits,
+    media,
+    meta,
+    models,
+    queries,
+    ranking,
+    schemas,
+    serializers,
+)
 from .admin import router as admin_router
 from .database import Base, engine, ensure_schema, get_db
 from .deps import current_seller
@@ -166,16 +179,20 @@ def list_listings(
 
 
 @app.get("/api/listings/{listing_id}", response_model=schemas.ListingOut)
-def get_listing(listing_id: int, db: Session = Depends(get_db)):
+def get_listing(listing_id: int, request: Request, db: Session = Depends(get_db)):
     listing = crud.get_listing_or_404(db, listing_id, only_public=True)
-    listing.views += 1
-    db.commit()
-    db.refresh(listing)
+    # Una misma IP no suma vistas al recargar: el ranking usa este contador.
+    if limits.allow(request, f"vista:{listing_id}", limits.COUNT_ONCE):
+        listing.views += 1
+        db.commit()
+        db.refresh(listing)
     return serializers.listing_out(listing)
 
 
 @app.post("/api/uploads", response_model=list[schemas.UploadedMedia])
-def upload_media(files: list[UploadFile]):
+def upload_media(files: list[UploadFile], request: Request):
+    if not limits.allow(request, "subida", limits.UPLOAD):
+        raise HTTPException(status_code=429, detail="Demasiadas subidas, espera un momento")
     if not files:
         raise HTTPException(status_code=400, detail="No se recibió ningún archivo")
     uploaded = []
@@ -196,6 +213,20 @@ def create_listing(
     db: Session = Depends(get_db),
 ):
     """El anuncio queda en verificación (1 a 3 días) antes de publicarse."""
+    desde = models.utcnow() - timedelta(days=1)
+    recientes = (
+        db.query(models.Listing)
+        .filter(
+            models.Listing.seller_id == seller.id,
+            models.Listing.created_at >= desde,
+        )
+        .count()
+    )
+    if recientes >= limits.LISTINGS_PER_DAY:
+        raise HTTPException(
+            status_code=429,
+            detail="Llegaste al máximo de anuncios por día; escríbenos si necesitas más",
+        )
     listing = crud.create_listing(db, payload, seller)
     return schemas.ListingSubmitted(listing=serializers.listing_out(listing))
 
@@ -234,11 +265,12 @@ def bump_listing(
 
 
 @app.post("/api/listings/{listing_id}/contact", response_model=schemas.ListingOut)
-def register_contact(listing_id: int, db: Session = Depends(get_db)):
+def register_contact(listing_id: int, request: Request, db: Session = Depends(get_db)):
     listing = crud.get_listing_or_404(db, listing_id, only_public=True)
-    listing.contact_clicks += 1
-    db.commit()
-    db.refresh(listing)
+    if limits.allow(request, f"contacto:{listing_id}", limits.COUNT_ONCE):
+        listing.contact_clicks += 1
+        db.commit()
+        db.refresh(listing)
     return serializers.listing_out(listing)
 
 
@@ -251,13 +283,16 @@ if config.FRONTEND_DIST.is_dir():
     )
 
     @app.get("/{full_path:path}", include_in_schema=False)
-    def spa(full_path: str):
-        """Sirve el archivo pedido o el index para las rutas del router."""
+    def spa(full_path: str, db: Session = Depends(get_db)):
+        """Sirve el archivo pedido o el index con los metadatos de la ruta."""
         candidate = (config.FRONTEND_DIST / full_path).resolve()
         if full_path and config.FRONTEND_DIST in candidate.parents and candidate.is_file():
             return FileResponse(candidate)
+        template = (config.FRONTEND_DIST / "index.html").read_text(encoding="utf-8")
+        page = meta.page_meta(db, full_path)
         # El index no se cachea para que el navegador siempre pida la última versión.
-        return FileResponse(
-            config.FRONTEND_DIST / "index.html",
+        return HTMLResponse(
+            meta.render(template, page),
+            status_code=page.status,
             headers={"Cache-Control": "no-store"},
         )
